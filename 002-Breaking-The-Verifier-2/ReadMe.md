@@ -112,3 +112,34 @@ And thats it... Now any class verified with the split verifier will instantly pa
 You can test this by running `run.sh`.
 
 
+## Edit 1
+
+As it turns out, this can be used to bypass verification on up to **Java 7** class files. That's pretty big for obfuscators, as Java 7 still supports features like InvokeDynamic, and it is possible to convert Java 8 classes into Java 7.
+
+It turns out that the JVM is able to failover to the old split verifier if a class file (with a version <=J7) fails the new verification
+
+[verifier.cpp#L194](https://github.com/openjdk/jdk/blob/976acddeb5a8df1e868269787c023306aad3fe4a/src/hotspot/share/classfile/verifier.cpp#L194)
+```C++
+    ClassVerifier split_verifier(klass, THREAD);
+    split_verifier.verify_class(THREAD);
+    exception_name = split_verifier.result();
+	
+    bool can_failover = !DumpSharedSpaces &&
+      klass->major_version() < NOFAILOVER_MAJOR_VERSION;
+
+    if (can_failover && !HAS_PENDING_EXCEPTION &&  // Split verifier doesn't set PENDING_EXCEPTION for failure
+        (exception_name == vmSymbols::java_lang_VerifyError() ||
+         exception_name == vmSymbols::java_lang_ClassFormatError())) {
+      log_info(verification)("Fail over class verification to old verifier for: %s", klass->external_name());
+      log_info(class, init)("Fail over class verification to old verifier for: %s", klass->external_name());
+      message_buffer = NEW_RESOURCE_ARRAY(char, message_buffer_len);
+      exception_message = message_buffer;
+      exception_name = inference_verify(
+        klass, message_buffer, message_buffer_len, THREAD);
+    }
+    if (exception_name != NULL) {
+      exception_message = split_verifier.exception_message();
+    }
+```
+
+
