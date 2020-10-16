@@ -1,0 +1,13 @@
+[package]
+name = "NoVerify"
+version = "0.1.0"
+authors = ["mastercooker <c.o.okiedragon234@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+libc = "0.2.79"
+rs-jvm-bindings = { git = "https://github.com/cookiedragon234/rs-jvm-bindings/" }
+detour = { version = "0.7.1", default-features = false }

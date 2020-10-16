@@ -1,0 +1,35 @@
+super public class Illegal
+	version 49:0
+{
+	public Method "<init>":"()V"
+		stack 2 locals 1
+	{
+                aload_0;
+                invokespecial   Method java/lang/Object."<init>":"()V";
+                return;
+	}
+
+	public static Method "<clinit>":"()V"
+		stack 2 locals 1
+	{
+		getstatic  java/lang/System.out:"Ljava/io/PrintStream;";
+		ldc  "Hello, world!";
+		invokevirtual  java/io/PrintStream.println:"(Ljava/lang/String;)V";
+		
+		// Throw and catch a string
+		try T1;
+		
+		ldc "You should not be able to throw a string!";
+		athrow;
+		
+		endtry T1;
+		catch T1 java/lang/String;
+		
+		// print the string we caught
+		getstatic  java/lang/System.out:"Ljava/io/PrintStream;";
+		swap;
+		invokevirtual java/io/PrintStream.println:"(Ljava/lang/String;)V";
+		
+		return;
+	}
+}
