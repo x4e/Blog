@@ -16,7 +16,7 @@ This extra data was enough for a new verifier to quickly verify classes without 
 
 In Java 7 the JSR was removed, however stack map frames remained, mostly due to the increased peformance by the JVM not having to calculate this data.
 To remain backwards compatible the split verifier is bundled with the jvm in `verify.dll` or `libverify.so` depending on your platform.
-For class files earlier than 6 the slit verifier is used.
+For class files earlier than 6 the split verifier is used.
 
 ## Breaking this
 
