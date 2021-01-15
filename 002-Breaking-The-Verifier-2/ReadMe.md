@@ -10,7 +10,7 @@ Before Java 6, classes were verified in two stages:
 * Fist, the type-inferencing verifier did type emulations of methods in order to predict the types of any values used
 * Secondly, the type-checking verifier verified that types were used accurately
 
-A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to peform, paticularly on embedded systems. They proposed the split verifier (or ) model.
+A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to peform, paticularly on embedded systems. They proposed the split verifier.
 
 The split verifier has similar stages to the original verifier, except that the first stage is peformed at compile time, and embedded into the class file's "StackMapTable" attributes by the compiler.
 This shifts the cost to compile time, potentially speeding up runtime class loading.
