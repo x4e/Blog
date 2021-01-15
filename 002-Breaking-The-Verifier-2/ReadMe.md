@@ -6,17 +6,19 @@ In #1 we broke the verifier for OpenJDK versions less than 9, here I will break 
 
 ## Some background
 
-Before Java 6, classes were verified using data calculated at runtime, where a special verifier, known as the "**Split Verifier**" would emulate methods to determine whether it was legal.
-This started to become a problem with the `jsr` instruction, which was able to start a subroutine *within* a method. 
-This was incredibly hard to accurately verify at runtime, and even if done right was very slow.
+Before Java 6, classes were verified in two stages:
+* Fist, the type-inferencing verifier did type emulations of methods in order to predict the types of any values used
+* Secondly, the type-checking verifier verified that types were used accurately
 
-The solution to this was to get the compiler to compute this information. 
-Starting with Java 6, compilers packed extra data into compiled classes known as Stack Map Frames.
-This extra data was enough for a new verifier to quickly verify classes without worrying too much about jsrs.
+A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to peform, paticularly on embedded systems. They proposed the split verifier (or ) model.
 
-In Java 7 the JSR was removed, however stack map frames remained, mostly due to the increased peformance by the JVM not having to calculate this data.
-To remain backwards compatible the split verifier is bundled with the jvm in `verify.dll` or `libverify.so` depending on your platform.
-For class files earlier than 6 the split verifier is used.
+The split verifier has similar stages to the original verifier, except that the first stage is peformed at compile time, and embedded into the class file's "StackMapTable" attributes by the compiler.
+This shifts the cost to compile time, potentially speeding up runtime class loading.
+
+The split verifier was initially intended to be shipped with Java 5 (Tiger release), but landed in Java 6, where the Java compiler had an optional experimental flag to generate the StackMapTable attributes, and the JVM would only use them if they were present.
+
+In Java 7 the StackMapTables were made mandatory for any version 7 class files, and the compiler produced them by default.
+However, to support older class files, the old verification method (now bundled externally in `verify.dll` or `libverify.so`) is used for any class files version 6 or less.	
 
 ## Breaking this
 
