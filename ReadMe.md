@@ -2,6 +2,8 @@
 
 Where I write stuff.
 
+Hosted at [blog.binclub.dev](https://blog.binclub.dev)
+
 ## Setup
 
 A lot of these posts contain code samples. 
