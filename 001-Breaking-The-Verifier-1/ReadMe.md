@@ -1,6 +1,8 @@
 # Breaking The Verifier #1
 
-Here's how the OpenJDK8 verifier (and current OpenJ9) can be bypassed.
+Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
+
+<!--more-->
 
 ## Some background
 
@@ -9,16 +11,17 @@ The idea was that you could run Java Applications from your web browser, and whi
 
 Obviously, for people to be able to run arbitrary Java applications in your browser there needs to be a form of security protection.
 The JVM has three main enforcers of security:
+
 - Access Checker
-	- Checks access flags for things like fields, classes and methods
-	- Enforced at native level
+    - Checks access flags for things like fields, classes and methods
+    - Enforced at native level
 - Verifier
-	- Verifies that classes contain "legal" bytecode
-	- Enforced at native level
+  - Verifies that classes contain "legal" bytecode
+  - Enforced at native level
 - Security Manager
-	- Is able to prohibit actions such as accessing the file system
-	- Enforced at Java level
-	- Inactive in a regular java instance
+  - Is able to prohibit actions such as accessing the file system
+  - Enforced at Java level
+  - Inactive in a regular java instance
 	
 In this post I am going to be breaking all three of these mechanisms.
 
@@ -59,7 +62,7 @@ This method is called each time a class links agains another class.
 It returns true if the class has permission to access the other class.
 The basic implementation checks that the class is public or in the same package.
 
-However, in Java 4 the reflection API was added. Because reflection inherently allows Java code to bypass access controls, a class was added, `sun.reflect.MagicAccessorImpl`. 
+However, in Java 4 the reflection API was added. Because reflection inherently allows Java code to bypass access controls, a backdoor was added in the form of the class `sun.reflect.MagicAccessorImpl`. 
 Java classes that are necessary for facilitating the reflection API can simply extend this class to *magically* bypass any access controls. Of course, if any class could bypass access flags (without using the reflection API which is guarded by the Security Manager) this would be a security risk. 
 The solution was to make MagicAccessorImpl package private, meaning only other sun.reflect classes can access it.
 
@@ -130,7 +133,7 @@ public class Test extends sun.reflect.MagicAccessorImpl {
 ```
 Obviously this code is invalid! You should not be able to throw a string.
 
-Now compile `Test.jasm` and run `java Test` making sure that you are using java version 8. As you can see we throw, catch and print the string.
+Now compile [Test.jasm](https://github.com/x4e/Blog/blob/master/001-Breaking-The-Verifier-1/Test.jasm) and run `java Test` making sure that you are using java version 8. As you can see we throw, catch and print the string.
 
 The second layer of the JVM's security is broken: we can load and execute completely illegal classes.
 With this power we can now also trivially break the third layer: we can simply overwrite the `java.lang.System.securityManager` field with `null` to disable the security manager. Since we are doing a direct field set instead of `System.setSecurityManager` the security manager itself has no option to prevent this. And since the access checker is giving us magic powers, we are not prevented by the JVM.

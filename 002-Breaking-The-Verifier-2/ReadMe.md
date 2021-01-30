@@ -1,13 +1,17 @@
 # Breaking The Verifier #2
 
-Make sure you've read #1 before this so you have a basic understanding of why the verifier is important.
+Breaking the verifier for all OpenJDK 8+ jvms by hooking shared library exports.
 
-In #1 we broke the verifier for OpenJDK versions less than 9, here I will break it in every modern OpenJDK version, tested on 8-15.
+<!--more-->
+
+Make sure you've read #1 before this so you have a basic understanding of what the verifier is and why it's important.
+
 
 ## Some background
 
 Before Java 6, classes were verified in two stages:
-* Fist, the type-inferencing verifier did type emulations of methods in order to predict the types of any values used
+
+* First, the type-inferencing verifier did type emulations of methods in order to predict the types of any values used
 * Secondly, the type-checking verifier verified that types were used accurately
 
 A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to peform, paticularly on embedded systems. They proposed the split verifier.
@@ -19,6 +23,7 @@ The split verifier was initially intended to be shipped with Java 5 (Tiger relea
 
 In Java 7 the StackMapTables were made mandatory for any version 7 class files, and the compiler produced them by default.
 However, to support older class files, the old verification method (now bundled externally in `verify.dll` or `libverify.so`) is used for any class files version 6 or less.	
+
 
 ## Breaking this
 
@@ -65,14 +70,14 @@ static verify_byte_codes_fn_t verify_byte_codes_fn() {
 Quite simply, the JVM loads the `verify` library, then searches for the `VerifyClassForMajorVersion` function within it.
 
 How can we exploit this?
-Simple!
 
 We can:
-- Get a handle to the same library
-- Find the same function
-- Hook said function
 
-To implement this I will be using rust. Sources are included in `src/lib.rs`. 
+1. Get a handle to the same library
+2. Find the same function
+3. Hook said function
+
+To implement this I will be using rust. Sources are included in [src/lib.rs](https://github.com/x4e/Blog/blob/master/002-Breaking-The-Verifier-2/src/lib.rs). 
 I've only implemented this for linux but feel free to extend it to Windows. Should only require `dlopen` and `dlsym` being replaced with platform specific alternatives.
 
 First I need to find the folder where java will store its libraries. This is stored in the property `sun.boot.library.path`.
@@ -111,7 +116,8 @@ HOOK = Some(hook);
 
 And thats it... Now any class verified with the split verifier will instantly pass verification.
 
-You can test this by running `run.sh`.
+You can test this by running [run.sh](https://github.com/x4e/Blog/blob/master/002-Breaking-The-Verifier-2/run.sh).
+
 
 
 ## Edit 1
