@@ -1,0 +1,343 @@
+:root {
+	--accent: #4ba6e1;
+	--main: #e9e9f0;
+	--main2: #cecece;
+	--main3: #b1b1b1;
+	--background: #232931;
+	--background2: #393e46;
+	--alt1: #004466;
+	--alt2: #C9AF9D;
+	--alt3: #F2E1AE;
+	--alt4: #E1684A;
+  }
+
+html {
+	line-height: 1.5;
+	font-family: sans-serif, serif;
+	font-size: 20px;
+	color: var(--main);
+	background-color: var(--background);
+}
+body {
+	margin: 0 auto;
+	max-width: 40em;
+	padding: 0;
+	hyphens: auto;
+	word-wrap: break-word;
+	text-rendering: optimizeLegibility;
+	font-kerning: normal;
+}
+@media (max-width: 600px) {
+	body {
+		font-size: 0.9em;
+		padding: 1em;
+	}
+}
+@media print {
+	body {
+		background-color: transparent;
+		color: black;
+		font-size: 12pt;
+	}
+	p,
+	h2,
+	h3 {
+		orphans: 3;
+		widows: 3;
+	}
+	h2,
+	h3,
+	h4 {
+		page-break-after: avoid;
+	}
+}
+p {
+	margin: 1em 0;
+}
+a {
+	color: var(--main);
+}
+a:visited {
+	color: var(--main);
+}
+img {
+	max-width: 100%;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin-top: 1em;
+}
+h5,
+h6 {
+	font-size: 1em;
+	font-style: italic;
+}
+h6 {
+	font-weight: normal;
+}
+ol,
+ul {
+	padding-left: 1.7em;
+	margin-top: 1em;
+}
+li > ol,
+li > ul {
+	margin-top: 0;
+}
+blockquote {
+	margin: 1em 0 1em 1.7em;
+	padding-left: 1em;
+	border-left: 2px solid var(--main);
+	color: var(--main2);
+}
+code {
+	font-family: Menlo, Monaco, "Lucida Console", Consolas, monospace;
+	font-size: 85%;
+	margin: 0;
+}
+pre {
+	margin: 1em 0;
+	overflow: auto;
+}
+pre code {
+	padding: 0;
+	overflow: visible;
+}
+.sourceCode {
+	background-color: transparent;
+	overflow: visible;
+}
+hr {
+	background-color: var(--main);
+	border: none;
+	height: 1px;
+	margin: 1em 0;
+}
+table {
+	margin: 1em 0;
+	border-collapse: collapse;
+	width: 100%;
+	overflow-x: auto;
+	display: block;
+	font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+	margin-bottom: 0.75em;
+}
+tbody {
+	margin-top: 0.5em;
+	border-top: 1px solid var(--main);
+	border-bottom: 1px solid var(--main);
+}
+th {
+	border-top: 1px solid var(--main);
+	padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+	padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+	margin-bottom: 4em;
+	text-align: center;
+}
+#TOC li {
+	list-style: none;
+}
+#TOC a:not(:hover) {
+	text-decoration: none;
+}
+code {
+	white-space: pre-wrap;
+}
+span.smallcaps {
+	font-variant: small-caps;
+}
+span.underline {
+	text-decoration: underline;
+}
+div.column {
+	display: inline-block;
+	vertical-align: top;
+	width: 50%;
+}
+div.hanging-indent {
+	margin-left: 1.5em;
+	text-indent: -1.5em;
+}
+ul.task-list {
+	list-style: none;
+}
+pre > code.sourceCode {
+	white-space: pre;
+	position: relative;
+}
+pre > code.sourceCode > span {
+	display: inline-block;
+	line-height: 1.25;
+}
+pre > code.sourceCode > span:empty {
+	height: 1.2em;
+}
+.sourceCode {
+	overflow: visible;
+}
+code.sourceCode > span {
+	color: inherit;
+	text-decoration: inherit;
+}
+div.sourceCode {
+	margin: 1em 0;
+}
+pre.sourceCode {
+	margin: 0;
+}
+@media screen {
+	div.sourceCode {
+		overflow: auto;
+	}
+}
+@media print {
+	pre > code.sourceCode {
+		white-space: pre-wrap;
+	}
+	pre > code.sourceCode > span {
+		text-indent: -5em;
+		padding-left: 5em;
+	}
+}
+pre.numberSource code {
+	counter-reset: source-line 0;
+}
+pre.numberSource code > span {
+	position: relative;
+	left: -4em;
+	counter-increment: source-line;
+}
+pre.numberSource code > span > a:first-child::before {
+	content: counter(source-line);
+	position: relative;
+	left: -1em;
+	text-align: right;
+	vertical-align: baseline;
+	border: none;
+	display: inline-block;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	padding: 0 4px;
+	width: 4em;
+	background-color: var(--background2);
+	color: var(--main);
+}
+pre.numberSource {
+	margin-left: 3em;
+	border-left: 1px solid var(--background2);
+	padding-left: 4px;
+}
+div.sourceCode {
+	background-color: var(--background2);
+	color: var(--main);
+}
+@media screen {
+	pre > code.sourceCode > span > a:first-child::before {
+		text-decoration: underline;
+	}
+}
+code span.al {
+	color: #ffff00;
+} /* Alert */
+code span.an {
+	color: #0066ff;
+	font-weight: bold;
+	font-style: italic;
+} /* Annotation */
+code span.at {
+} /* Attribute */
+code span.bn {
+	color: #44aa43;
+} /* BaseN */
+code span.bu {
+} /* BuiltIn */
+code span.cf {
+	color: #43a8ed;
+	font-weight: bold;
+} /* ControlFlow */
+code span.ch {
+	color: #049b0a;
+} /* Char */
+code span.cn {
+} /* Constant */
+code span.co {
+	color: #0066ff;
+	font-weight: bold;
+	font-style: italic;
+} /* Comment */
+code span.do {
+	color: #0066ff;
+	font-style: italic;
+} /* Documentation */
+code span.dt {
+	text-decoration: underline;
+} /* DataType */
+code span.dv {
+	color: #44aa43;
+} /* DecVal */
+code span.er {
+	color: #ffff00;
+	font-weight: bold;
+} /* Error */
+code span.ex {
+} /* Extension */
+code span.fl {
+	color: #44aa43;
+} /* Float */
+code span.fu {
+	color: #ff9358;
+	font-weight: bold;
+} /* Function */
+code span.im {
+} /* Import */
+code span.in {
+	color: #0066ff;
+	font-weight: bold;
+	font-style: italic;
+} /* Information */
+code span.kw {
+	color: #43a8ed;
+	font-weight: bold;
+} /* Keyword */
+code span.op {
+} /* Operator */
+code span.pp {
+	font-weight: bold;
+} /* Preprocessor */
+code span.sc {
+	color: #049b0a;
+} /* SpecialChar */
+code span.ss {
+	color: #049b0a;
+} /* SpecialString */
+code span.st {
+	color: #049b0a;
+} /* String */
+code span.va {
+} /* Variable */
+code span.vs {
+	color: #049b0a;
+} /* VerbatimString */
+code span.wa {
+	color: #ffff00;
+	font-weight: bold;
+} /* Warning */
+.display.math {
+	display: block;
+	text-align: center;
+	margin: 0.5rem auto;
+}

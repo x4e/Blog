@@ -1,12 +1,14 @@
 ---
 title: "Breaking The Verifier #2"
+author: x4e
+keywords: [jvm,verifier]
+description: "Breaking the verifier for all OpenJDK 8+ JVMs by hooking shared library exports"
+date: 17th October 2020
 ---
 
-Breaking the verifier for all OpenJDK 8+ jvms by hooking shared library exports.
+Breaking the verifier for all OpenJDK 8+ JVMs by hooking shared library exports.
 
-<!--more-->
-
-Make sure you've read #1 before this so you have a basic understanding of what the verifier is and why it's important.
+Make sure you've read #1 before this, so you have a basic understanding of what the verifier is and why it's important.
 
 
 ## Some background
@@ -16,9 +18,9 @@ Before Java 6, classes were verified in two stages:
 * First, the type-inferencing verifier did type emulations of methods in order to predict the types of any values used
 * Secondly, the type-checking verifier verified that types were used accurately
 
-A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to peform, paticularly on embedded systems. They proposed the split verifier.
+A team working on the "Connected Limited Device Configuration" complained that this process, specifically the first stage, was slow and expensive to perform, particularly on embedded systems. They proposed the split verifier.
 
-The split verifier has similar stages to the original verifier, except that the first stage is peformed at compile time, and embedded into the class file's "StackMapTable" attributes by the compiler.
+The split verifier has similar stages to the original verifier, except that the first stage is performed at compile time, and embedded into the class file's "StackMapTable" attributes by the compiler.
 This shifts the cost to compile time, potentially speeding up runtime class loading.
 
 The split verifier was initially intended to be shipped with Java 5 (Tiger release), but landed in Java 6, where the Java compiler had an optional experimental flag to generate the StackMapTable attributes, and the JVM would only use them if they were present.
@@ -29,7 +31,7 @@ However, to support older class files, the old verification method (now bundled 
 
 ## Breaking this
 
-Lets take a look at the JVM code for loading the `verify` dynamic library that contains the split verifier
+Let's take a look at the JVM code for loading the `verify` dynamic library that contains the split verifier
 
 [verifier.cpp#L66](https://github.com/openjdk/jdk/blob/976acddeb5a8df1e868269787c023306aad3fe4a/src/hotspot/share/classfile/verifier.cpp#L66):
 ```C++
@@ -80,7 +82,7 @@ We can:
 3. Hook said function
 
 To implement this I will be using rust. Sources are included in [src/lib.rs](https://github.com/x4e/Blog/blob/master/002-Breaking-The-Verifier-2/src/lib.rs). 
-I've only implemented this for linux but feel free to extend it to Windows. Should only require `dlopen` and `dlsym` being replaced with platform specific alternatives.
+I've only implemented this for Linux but feel free to extend it to other operating systems. Should only require `dlopen` and `dlsym` being replaced with alternatives.
 
 First I need to find the folder where java will store its libraries. This is stored in the property `sun.boot.library.path`.
 ```Rust
@@ -93,7 +95,7 @@ assert!(!out.is_null());
 PATH = Some(from_c_str((**env).GetStringUTFChars.unwrap()(env, out, null_mut())));
 ```
 
-Now I can retrieve a handle to the `verify` dll:
+Now I can retrieve a handle to the `verify` DLL:
 ```Rust
 let dl: *mut c_void = dlopen(to_c_str(format!("{}/libverify.so", PATH.clone().unwrap())), RTLD_LAZY);
 ```
@@ -116,7 +118,7 @@ hook.enable().expect("Couldn't enable hook");
 HOOK = Some(hook);
 ```
 
-And thats it... Now any class verified with the split verifier will instantly pass verification.
+And that's it... Now any class verified with the split verifier will instantly pass verification.
 
 You can test this by running [run.sh](https://github.com/x4e/Blog/blob/master/002-Breaking-The-Verifier-2/run.sh).
 
@@ -151,5 +153,3 @@ It turns out that the JVM is able to failover to the old split verifier if a cla
       exception_message = split_verifier.exception_message();
     }
 ```
-
-

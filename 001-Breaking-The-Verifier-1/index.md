@@ -1,9 +1,9 @@
 ---
 title: "Breaking The Verifier #1"
-keywords: [jvm,verifier]
 author: x4e
-description: Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
-
+keywords: [jvm,verifier]
+description: "Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor"
+date: 16th October 2020
 ---
 
 Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
