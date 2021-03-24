@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="" >
+
+	<head>
+		<meta charset="utf-8" />
+		<meta name="generator" content="pandoc" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+				<meta name="author" content="x4e" />
+								<meta name="keywords" content="jvm, verifier" />
+						<meta name="description" content="Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor." />
+				<title>Breaking The Verifier #1</title>
+				<link rel="stylesheet" href="/home/cook/Computing/Blog/templates/styles.css" />
+							</head>
+
+	<body>
+						<header id="title-block-header">
+			<h1 class="title">Breaking The Verifier #1</h1>
+									<p class="author">x4e</p>
+								</header>
+				<p>Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.</p>
+    <h2 id="some-background">Some background</h2>
+    <p>The JVM was originally designed with web usage in mind. The idea was that you could run Java Applications from your web browser, and while this was popular, chrome began to start the process of removing it in 2015.</p>
+    <p>Obviously, for people to be able to run arbitrary Java applications in your browser there needs to be a form of security protection. The JVM has three main enforcers of security:</p>
+    <ul>
+    <li>Access Checker
+    <ul>
+    <li>Checks access flags for things like fields, classes and methods</li>
+    <li>Enforced at native level</li>
+    </ul></li>
+    <li>Verifier
+    <ul>
+    <li>Verifies that classes contain “legal” bytecode</li>
+    <li>Enforced at native level</li>
+    </ul></li>
+    <li>Security Manager
+    <ul>
+    <li>Is able to prohibit actions such as accessing the file system</li>
+    <li>Enforced at Java level</li>
+    <li>Inactive in a regular java instance</li>
+    </ul></li>
+    </ul>
+    <p>In this post I am going to be breaking all three of these mechanisms.</p>
+    <h2 id="why-does-the-jvm-have-a-verifier">Why does the JVM have a verifier?</h2>
+    <p>Java is compiled into an intermediate bytecode, which must follow <a href="https://docs.oracle.com/javase/specs/jvms/se15/html/">a strict set of rules defined by oracle</a>. By having a well-defined specification of easy to understand bytecode, users are easily able to disassemble bytecode before running it on their machines, so that they can make sure they only run code that they trust. It also means checks can be made to ensure, for example, that a jump instruction doesn’t jump to arbitrary memory addresses, for example on the heap (allowing generating code at runtime), or inside another method).</p>
+    <h2 id="breaking-it">Breaking it</h2>
+    <p><a href="https://github.com/xxDark">xDark</a> and I were spending a bit of time recently looking into potential JVM security flaws, when he stumbled across an interesting piece of code (So of course full credit for this goes to him, I am just creating a write-up).</p>
+    <p>Take a look at the following code from <a href="https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/runtime/reflection.cpp#L455">reflection.cpp#L455</a>:</p>
+    <div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> Reflection<span class="op">::</span>verify_class_access<span class="op">(</span>Klass<span class="op">*</span> current_class<span class="op">,</span> Klass<span class="op">*</span> new_class<span class="op">,</span> <span class="dt">bool</span> classloader_only<span class="op">)</span> <span class="op">{</span></span>
+    <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Verify that current_class can access new_class.  If the classloader_only</span></span>
+    <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// flag is set, we automatically allow any accesses in which current_class</span></span>
+    <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// doesn&#39;t have a classloader.</span></span>
+    <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">((</span>current_class <span class="op">==</span> NULL<span class="op">)</span> <span class="op">||</span></span>
+    <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span>current_class <span class="op">==</span> new_class<span class="op">)</span> <span class="op">||</span></span>
+    <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span>new_class<span class="op">-&gt;</span>is_public<span class="op">())</span> <span class="op">||</span></span>
+    <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>      is_same_class_package<span class="op">(</span>current_class<span class="op">,</span> new_class<span class="op">))</span> <span class="op">{</span></span>
+    <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+    <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+    <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// New (1.4) reflection implementation. Allow all accesses from</span></span>
+    <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">// sun/reflect/MagicAccessorImpl subclasses to succeed trivially.</span></span>
+    <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>   JDK_Version<span class="op">::</span>is_gte_jdk14x_version<span class="op">()</span></span>
+    <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      <span class="op">&amp;&amp;</span> UseNewReflection</span>
+    <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="op">&amp;&amp;</span> current_class<span class="op">-&gt;</span>is_subclass_of<span class="op">(</span>SystemDictionary<span class="op">::</span>reflect_MagicAccessorImpl_klass<span class="op">()))</span> <span class="op">{</span></span>
+    <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+    <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+    <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> can_relax_access_check_for<span class="op">(</span>current_class<span class="op">,</span> new_class<span class="op">,</span> classloader_only<span class="op">);</span></span>
+    <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+    <p>This method is called each time a class links against another class. It returns true if the class has permission to access the other class. The basic implementation checks that the class is public or in the same package.</p>
+    <p>However, in Java 4 the reflection API was added. Because reflection inherently allows Java code to bypass access controls, a backdoor was added in the form of the class <code>sun.reflect.MagicAccessorImpl</code>. Java classes that are necessary for facilitating the reflection API can simply extend this class to <em>magically</em> bypass any access controls. Of course, if any class could bypass access flags (without using the reflection API which is guarded by the Security Manager) this would be a security risk. The solution was to make MagicAccessorImpl package private, meaning only other sun.reflect classes can access it.</p>
+    <p>There’s one problem with this though: If you try to load a class that extends the magic accessor it will call <code>verify_class_access</code> to check if you can indeed access the magic accessor (which of course we shouldn’t be able to). This method will see that you extend magic accessor, and therefore allow you to extend magic accessor.</p>
+    <p>By now we have broken the first stage of JVM security, the access checker. By simply extending a specific class we can bypass all access restrictions.</p>
+    <p>Now we will use this to break the second two.</p>
+    <p><a href="https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/classfile/verifier.cpp#L188">verifier.cpp#L188</a></p>
+    <div class="sourceCode" id="cb2"><pre class="sourceCode c++"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> Verifier<span class="op">::</span>is_eligible_for_verification<span class="op">(</span>instanceKlassHandle klass<span class="op">,</span> <span class="dt">bool</span> should_verify_class<span class="op">)</span> <span class="op">{</span></span>
+    <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  Symbol<span class="op">*</span> name <span class="op">=</span> klass<span class="op">-&gt;</span>name<span class="op">();</span></span>
+    <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  Klass<span class="op">*</span> refl_magic_klass <span class="op">=</span> SystemDictionary<span class="op">::</span>reflect_MagicAccessorImpl_klass<span class="op">();</span></span>
+    <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">bool</span> is_reflect <span class="op">=</span> refl_magic_klass <span class="op">!=</span> NULL <span class="op">&amp;&amp;</span> klass<span class="op">-&gt;</span>is_subtype_of<span class="op">(</span>refl_magic_klass<span class="op">);</span></span>
+    <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">(</span>should_verify_for<span class="op">(</span>klass<span class="op">-&gt;</span>class_loader<span class="op">(),</span> should_verify_class<span class="op">)</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// return if the class is a bootstrapping class</span></span>
+    <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// or defineClass specified not to verify by default (flags override passed arg)</span></span>
+    <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// We need to skip the following four for bootstraping</span></span>
+    <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    name <span class="op">!=</span> vmSymbols<span class="op">::</span>java_lang_Object<span class="op">()</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    name <span class="op">!=</span> vmSymbols<span class="op">::</span>java_lang_Class<span class="op">()</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    name <span class="op">!=</span> vmSymbols<span class="op">::</span>java_lang_String<span class="op">()</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    name <span class="op">!=</span> vmSymbols<span class="op">::</span>java_lang_Throwable<span class="op">()</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Can not verify the bytecodes for shared classes because they have</span></span>
+    <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// already been rewritten to contain constant pool cache indices,</span></span>
+    <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// which the verifier can&#39;t understand.</span></span>
+    <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Shared classes shouldn&#39;t have stackmaps either.</span></span>
+    <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">!</span>klass<span class="op">()-&gt;</span>is_shared<span class="op">()</span> <span class="op">&amp;&amp;</span></span>
+    <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// As of the fix for 4486457 we disable verification for all of the</span></span>
+    <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// dynamically-generated bytecodes associated with the 1.4</span></span>
+    <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// reflection implementation, not just those associated with</span></span>
+    <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// sun/reflect/SerializationConstructorAccessor.</span></span>
+    <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// </span><span class="al">NOTE</span><span class="co">: this is called too early in the bootstrapping process to be</span></span>
+    <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// guarded by Universe::is_gte_jdk14x_version()/UseNewReflection.</span></span>
+    <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Also for lambda generated code, gte jdk8</span></span>
+    <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">(!</span>is_reflect <span class="op">||</span> VerifyReflectionBytecodes<span class="op">));</span></span>
+    <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+    <p>This backdoor into the access checker didn’t completely allow the reflection API to function correctly, there was a bug.</p>
+    <p>The code does reference a bug code (<code>4486457</code>) but it seems to be private. There is however <a href="http://mail.openjdk.java.net/pipermail/jigsaw-dev/2016-December/010645.html">an interesting email chain related to it</a>:</p>
+    <blockquote>
+    <p>No it isn’t public. Basically when the code-generating reflection mechanism was introduced verification had to be bypassed because the generated code didn’t obey the expected subclassing rules for protected access - hence MagicAccessor.</p>
+    </blockquote>
+    <p>What this essentially means is that verification will be <strong>completely</strong> disabled for all subclasses of MagicAccessor. I’ve written a test class Test.jasm to test this. The class can be decompiled to something like below:</p>
+    <div class="sourceCode" id="cb3"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> Test <span class="kw">extends</span> sun<span class="op">.</span><span class="fu">reflect</span><span class="op">.</span><span class="fu">MagicAccessorImpl</span> <span class="op">{</span></span>
+    <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span><span class="op">(</span><span class="bu">String</span><span class="op">[]</span> args<span class="op">)</span> <span class="op">{</span></span>
+    <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">System</span><span class="op">.</span><span class="fu">out</span><span class="op">.</span><span class="fu">println</span><span class="op">(</span><span class="st">&quot;Hello, world!&quot;</span><span class="op">);</span></span>
+    <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        </span>
+    <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span> <span class="op">{</span></span>
+    <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">throw</span> <span class="st">&quot;You should not be able to throw a string!&quot;</span><span class="op">;</span></span>
+    <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">catch</span> <span class="op">(</span><span class="bu">String</span> exception<span class="op">)</span> <span class="op">{</span></span>
+    <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">System</span><span class="op">.</span><span class="fu">out</span><span class="op">.</span><span class="fu">println</span><span class="op">(</span>exception<span class="op">);</span></span>
+    <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+    <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+    <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+    <p>Obviously this code is invalid! You should not be able to throw a string.</p>
+    <p>Now compile <a href="https://github.com/x4e/Blog/blob/master/001-Breaking-The-Verifier-1/Test.jasm">Test.jasm</a> and run <code>java Test</code> making sure that you are using java version 8. As you can see we throw, catch and print the string.</p>
+    <p>The second layer of the JVM’s security is broken: we can load and execute completely illegal classes. With this power we can now also trivially break the third layer: we can simply overwrite the <code>java.lang.System.securityManager</code> field with <code>null</code> to disable the security manager. Since we are doing a direct field set instead of <code>System.setSecurityManager</code> the security manager itself has no option to prevent this. And since the access checker is giving us magic powers, we are not prevented by the JVM.</p>
+    <h2 id="future-jvms">Future JVMs</h2>
+    <p>Sadly this was broken after Java 8 with the introduction of the module system. Magic Accessor was relocated into the <code>jvm.internal</code> package which is in a module protected from user classes.</p>
+			</body>
+
+</html>

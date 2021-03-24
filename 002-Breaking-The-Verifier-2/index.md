@@ -1,4 +1,6 @@
-# Breaking The Verifier #2
+---
+title: "Breaking The Verifier #2"
+---
 
 Breaking the verifier for all OpenJDK 8+ jvms by hooking shared library exports.
 

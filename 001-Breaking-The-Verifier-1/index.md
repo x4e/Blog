@@ -1,8 +1,12 @@
-# Breaking The Verifier #1
+---
+title: "Breaking The Verifier #1"
+keywords: [jvm,verifier]
+author: x4e
+description: Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
+
+---
 
 Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
-
-<!--more-->
 
 ## Some background
 
@@ -28,12 +32,12 @@ In this post I am going to be breaking all three of these mechanisms.
 ## Why does the JVM have a verifier?
 
 Java is compiled into an intermediate bytecode, which must follow [a strict set of rules defined by oracle](https://docs.oracle.com/javase/specs/jvms/se15/html/).
-By having a well defined specification of easy to understand bytecode, users are easily able to dissasemble bytecode before running it on their machines, so that they can make sure they only run code that they trust.
-It also means checks can be made to ensure, for example, that a jump instruction doesnt jump to abritrary memory addresses, for example on the heap (allowing generating code at runtime), or inside another method).
+By having a well-defined specification of easy to understand bytecode, users are easily able to disassemble bytecode before running it on their machines, so that they can make sure they only run code that they trust.
+It also means checks can be made to ensure, for example, that a jump instruction doesn't jump to arbitrary memory addresses, for example on the heap (allowing generating code at runtime), or inside another method).
 
 ## Breaking it
 
-Me and [xDark](https://github.com/xxDark) where spending a bit of time recently looking into potential JVM security flaws, when he stumbled across an interesting piece of code (So of course full credit for this goes to him, I am just creating a writeup).
+[xDark](https://github.com/xxDark) and I were spending a bit of time recently looking into potential JVM security flaws, when he stumbled across an interesting piece of code (So of course full credit for this goes to him, I am just creating a write-up).
 
 Take a look at the following code from [reflection.cpp#L455](https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/runtime/reflection.cpp#L455):
 ```C++
@@ -58,7 +62,7 @@ bool Reflection::verify_class_access(Klass* current_class, Klass* new_class, boo
   return can_relax_access_check_for(current_class, new_class, classloader_only);
 }
 ```
-This method is called each time a class links agains another class.
+This method is called each time a class links against another class.
 It returns true if the class has permission to access the other class.
 The basic implementation checks that the class is public or in the same package.
 
@@ -66,7 +70,7 @@ However, in Java 4 the reflection API was added. Because reflection inherently a
 Java classes that are necessary for facilitating the reflection API can simply extend this class to *magically* bypass any access controls. Of course, if any class could bypass access flags (without using the reflection API which is guarded by the Security Manager) this would be a security risk. 
 The solution was to make MagicAccessorImpl package private, meaning only other sun.reflect classes can access it.
 
-There's one problem with this though: If you try to load a class that extends the magic accessor it will call `verify_class_access` to check if you can indeed access the magic accessor (which of course we shouldnt be able to). This method will see that you extend magic accessor, and therefore allow you to extend magic accessor.
+There's one problem with this though: If you try to load a class that extends the magic accessor it will call `verify_class_access` to check if you can indeed access the magic accessor (which of course we shouldn't be able to). This method will see that you extend magic accessor, and therefore allow you to extend magic accessor.
 
 By now we have broken the first stage of JVM security, the access checker. By simply extending a specific class we can bypass all access restrictions.
 
@@ -109,7 +113,7 @@ bool Verifier::is_eligible_for_verification(instanceKlassHandle klass, bool shou
 
 This backdoor into the access checker didn't completely allow the reflection API to function correctly, there was a bug.
 
-While there is a refenced bug code (`4486457`) it seems to be private. There is however [an interesing email chain related to it](http://mail.openjdk.java.net/pipermail/jigsaw-dev/2016-December/010645.html):
+The code does reference a bug code (`4486457`) but it seems to be private. There is however [an interesting email chain related to it](http://mail.openjdk.java.net/pipermail/jigsaw-dev/2016-December/010645.html):
 
 > No it isn't public. Basically when the code-generating reflection
 > mechanism was introduced verification had to be bypassed because the
