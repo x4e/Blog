@@ -42,6 +42,7 @@ def compile(posts, sourcePath):
 		"pandoc",
 		sourceStr,
 		"-o", targetStr,
+		"-t", "markdown+lists_without_preceding_blankline+emoji",
 		"--standalone",
 		"--highlight-style", "espresso",
 		"--email-obfuscation", "references",
