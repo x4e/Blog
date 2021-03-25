@@ -30,7 +30,7 @@ Bitcoin was designed before cryptocurrencies had ever received any major attenti
 
 In 2017/2018 Bitcoin experienced parabolic growth and attention, causing the network to come under extreme strain from the amount and size of transactions taking place. A combination of huge fees and transaction waiting times highlighted the impracticality of Bitcoin as a form of cash and probably contributed to it's price decline, since back then Bitcoin's price speculation was based on it being a form of payment rather than a store of value.
 
-The technical reason behind Bitcoin's lack of scalability is the block size. Every transaction is included in a block which is then committed to the block chain, larger blocks allow more transactions to be processed at a time. When Bitcoin was created there was actually no intention to have a block size limit, but one did effectively exist due to some related code. Satoshi manually added a 1 MB block size limit in 2010 which became effective in 2013 after the unintended block size limit was removed.
+The technical reason behind Bitcoin's lack of scalability is the block size. Every transaction is included in a block which is then committed to the blockchain, larger blocks allow more transactions to be processed at a time. When Bitcoin was created there was actually no intention to have a block size limit, but one did effectively exist due to some related code. Satoshi manually added a 1 MB block size limit in 2010 which became effective in 2013 after the unintended block size limit was removed.
 
 There are some reasons why a larger block size could not be desirable:
 
