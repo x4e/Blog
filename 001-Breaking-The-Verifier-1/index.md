@@ -6,8 +6,6 @@ description: "Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured ba
 date: 16th October 2020
 ---
 
-Bypassing the OpenJDK8 and OpenJ9 verifier through an unsecured backdoor.
-
 ## Some background
 
 The JVM was originally designed with web usage in mind. 
@@ -31,7 +29,7 @@ In this post I am going to be breaking all three of these mechanisms.
 
 ## Why does the JVM have a verifier?
 
-Java is compiled into an intermediate bytecode, which must follow [a strict set of rules defined by oracle](https://docs.oracle.com/javase/specs/jvms/se15/html/).
+Java is compiled into an intermediate bytecode, which must follow [a strict set of rules defined by Oracle](https://docs.oracle.com/javase/specs/jvms/se15/html/).
 By having a well-defined specification of easy to understand bytecode, users are easily able to disassemble bytecode before running it on their machines, so that they can make sure they only run code that they trust.
 It also means checks can be made to ensure, for example, that a jump instruction doesn't jump to arbitrary memory addresses, for example on the heap (allowing generating code at runtime), or inside another method).
 
@@ -40,7 +38,7 @@ It also means checks can be made to ensure, for example, that a jump instruction
 [xDark](https://github.com/xxDark) and I were spending a bit of time recently looking into potential JVM security flaws, when he stumbled across an interesting piece of code (So of course full credit for this goes to him, I am just creating a write-up).
 
 Take a look at the following code from [reflection.cpp#L455](https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/runtime/reflection.cpp#L455):
-```C++
+```cpp
 bool Reflection::verify_class_access(Klass* current_class, Klass* new_class, bool classloader_only) {
   // Verify that current_class can access new_class.  If the classloader_only
   // flag is set, we automatically allow any accesses in which current_class
@@ -78,7 +76,7 @@ Now we will use this to break the second two.
 
 
 [verifier.cpp#L188](https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/classfile/verifier.cpp#L188)
-```C++
+```cpp
 bool Verifier::is_eligible_for_verification(instanceKlassHandle klass, bool should_verify_class) {
   Symbol* name = klass->name();
   Klass* refl_magic_klass = SystemDictionary::reflect_MagicAccessorImpl_klass();
@@ -122,7 +120,7 @@ The code does reference a bug code (`4486457`) but it seems to be private. There
 
 What this essentially means is that verification will be **completely** disabled for all subclasses of MagicAccessor.
 I've written a test class Test.jasm to test this. The class can be decompiled to something like below:
-```Java
+```java
 public class Test extends sun.reflect.MagicAccessorImpl {
 	public static void main(String[] args) {
 		System.out.println("Hello, world!");

@@ -1,0 +1,38 @@
+html {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+body {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	max-width: initial;
+	width: 100%;
+	grid-template-columns: min-content max-content;
+	column-gap: 50px;
+}
+
+header {
+	position: sticky;
+	top: 0;
+}
+
+header > h1.title {
+	text-align: left;
+	margin: 0;
+}
+
+header > p.subtitle {
+	margin: 0;
+	text-align: left;
+}
+
+header > nav.tags {
+	text-align: left;
+}
+
+header > ul.links {
+	text-align: left;
+}
