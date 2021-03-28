@@ -38,7 +38,7 @@ It also means checks can be made to ensure, for example, that a jump instruction
 [xDark](https://github.com/xxDark) and I were spending a bit of time recently looking into potential JVM security flaws, when he stumbled across an interesting piece of code (So of course full credit for this goes to him, I am just creating a write-up).
 
 Take a look at the following code from [reflection.cpp#L455](https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/runtime/reflection.cpp#L455):
-```cpp
+```{.cpp startFrom="455"}
 bool Reflection::verify_class_access(Klass* current_class, Klass* new_class, bool classloader_only) {
   // Verify that current_class can access new_class.  If the classloader_only
   // flag is set, we automatically allow any accesses in which current_class
@@ -76,7 +76,7 @@ Now we will use this to break the second two.
 
 
 [verifier.cpp#L188](https://github.com/openjdk/jdk/blob/jdk8-b120/hotspot/src/share/vm/classfile/verifier.cpp#L188)
-```cpp
+```{.cpp startFrom="188"}
 bool Verifier::is_eligible_for_verification(instanceKlassHandle klass, bool should_verify_class) {
   Symbol* name = klass->name();
   Klass* refl_magic_klass = SystemDictionary::reflect_MagicAccessorImpl_klass();

@@ -34,7 +34,7 @@ However, to support older class files, the old verification method (now bundled 
 Let's take a look at the JVM code for loading the `verify` dynamic library that contains the split verifier
 
 [verifier.cpp#L66](https://github.com/openjdk/jdk/blob/976acddeb5a8df1e868269787c023306aad3fe4a/src/hotspot/share/classfile/verifier.cpp#L66):
-```C++
+```{.cpp startFrom="66"}
 // Access to external entry for VerifyClassForMajorVersion - old byte code verifier
 
 extern "C" {
@@ -85,7 +85,7 @@ To implement this I will be using rust. Sources are included in [src/lib.rs](htt
 I've only implemented this for Linux but feel free to extend it to other operating systems. Should only require `dlopen` and `dlsym` being replaced with alternatives.
 
 First I need to find the folder where java will store its libraries. This is stored in the property `sun.boot.library.path`.
-```Rust
+```rust
 let system: jclass = (**env).FindClass.unwrap()(env, to_c_str("java/lang/System"));
 let method: jmethodID = (**env).GetStaticMethodID.unwrap()(env, system, to_c_str("getProperty"), to_c_str("(Ljava/lang/String;)Ljava/lang/String;"));
 let name: jstring = (**env).NewStringUTF.unwrap()(env, to_c_str("sun.boot.library.path"));
@@ -96,17 +96,17 @@ PATH = Some(from_c_str((**env).GetStringUTFChars.unwrap()(env, out, null_mut()))
 ```
 
 Now I can retrieve a handle to the `verify` DLL:
-```Rust
+```rust
 let dl: *mut c_void = dlopen(to_c_str(format!("{}/libverify.so", PATH.clone().unwrap())), RTLD_LAZY);
 ```
 
 And then retrieve a pointer to the verify function:
-```Rust
+```rust
 let symbol_ptr: *mut c_void = dlsym(dl, to_c_str("VerifyClassForMajorVersion"));
 ```
 
 Now I will use the `detour` crate to hook the method, this just modifies the function assembly to call my own function instead:
-```Rust
+```rust
 pub unsafe extern "C" fn dont_verify_lol(_env: *mut c_void, _class: *mut c_void, _buffer: *mut c_char, _len: c_int, _major_version: c_int) -> c_uchar {
 	// 1 == class file is legal
 	return 1;
@@ -131,7 +131,7 @@ As it turns out, this can be used to bypass verification on up to **Java 7** cla
 It turns out that the JVM is able to failover to the old split verifier if a class file (with a version <=J7) fails the new verification
 
 [verifier.cpp#L194](https://github.com/openjdk/jdk/blob/976acddeb5a8df1e868269787c023306aad3fe4a/src/hotspot/share/classfile/verifier.cpp#L194)
-```C++
+```{.cpp startFrom="194"}
     ClassVerifier split_verifier(klass, THREAD);
     split_verifier.verify_class(THREAD);
     exception_name = split_verifier.result();
