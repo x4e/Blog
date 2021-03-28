@@ -1,38 +1,6 @@
 
 
 
-p {
-	margin: 1em 0;
-}
-img {
-	max-width: 100%;
-	max-height: 70vh;
-}
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	margin-top: 1em;
-}
-h5,
-h6 {
-	font-size: 1em;
-	font-style: italic;
-}
-h6 {
-	font-weight: normal;
-}
-ol,
-ul {
-	padding-left: 1.7em;
-	margin-top: 1em;
-}
-li > ol,
-li > ul {
-	margin-top: 0;
-}
 blockquote {
 	margin: 1em 0 1em 1.7em;
 	padding-left: 1em;
