@@ -20,13 +20,13 @@ My particular Chromebook is an Asus c223n with an Apollolake processor. Here are
 
 3. Boot using the power cable as the power source and open Chrome. Press Control+Alt+T to open crosh and use the `shell` command to open a shell. Use [Mr Chromebox's script](https://mrchromebox.tech/#fwscript) to install RW_LEGACY firmware.
 
-3. Turn the Chromebook off and plug in a bootable USB containing the Arch Installation ISO.
+4. Turn the Chromebook off and plug in a bootable USB containing the Arch Installation ISO.
 
-4. Turn the Chromebook on and press Control+L at the developer mode boot screen to use the alternate boot menu. Follow the steps to boot from the USB.
+5. Turn the Chromebook on and press Control+L at the developer mode boot screen to use the alternate boot menu. Follow the steps to boot from the USB.
 
-5. Connect to Wi-Fi (`ip link set wlan0 up`, `iwctl --passphrase PASSPHRASE station wlan0 connect SSID`, `dhcpcd wlan0`).
+6. Connect to Wi-Fi (`ip link set wlan0 up`, `iwctl --passphrase PASSPHRASE station wlan0 connect SSID`, `dhcpcd wlan0`).
 
-6. Partition the disk to look something like below (partitions have been sorted by layout which they weren't previously, and partitions 1-5 were originally on the chromebook and I have kept them):
+7. Partition the disk to look something like below (partitions have been sorted by layout which they weren't previously, and partitions 1-5 were originally on the chromebook and I have kept them):
 ```
 Device            Start      End  Sectors  Size Type
 /dev/mmcblk1p1       64    16447    16384    8M unknown
@@ -40,9 +40,9 @@ Device            Start      End  Sectors  Size Type
 ```
 Also make sure to format the root and boot partition as well as enabling the swap partition.
 
-7. Follow official installation instructions until Boot Loader section, where I followed [the Syslinux installation instructions](https://wiki.archlinux.org/index.php/Syslinux).
+8. Follow official installation instructions until Boot Loader section, where I followed [the Syslinux installation instructions](https://wiki.archlinux.org/index.php/Syslinux).
 
-8. Reboot and everything should work fine! (Remember to press Control+L at the developer boot warning screen).
+9. Reboot and everything should work fine! (Remember to press Control+L at the developer boot warning screen).
 
 The Syslinux + SeaBIOS combination creates a slightly weird boot process. First the BIOS shows a developer mode warning, then SeaBIOS loads Syslinux, then Syslinux loads Linux, then Linux loads my login manager. A lot of steps that can go wrong - but it works for now.
 [Boot process](https://www.youtube.com/watch?v=wbdMpEMTalw).

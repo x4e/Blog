@@ -1,68 +1,12 @@
-:root {
-	--accent: #4ba6e1;
-	--main: #e9e9f0;
-	--main2: #cecece;
-	--main3: #b1b1b1;
-	--background: #232931;
-	--background2: #393e46;
-	--background3: #435168;
-	--alt1: #004466;
-	--alt2: #C9AF9D;
-	--alt3: #F2E1AE;
-	--alt4: #E1684A;
-  }
 
-html {
-	line-height: 1.5;
-	font-family: sans-serif, serif;
-	font-size: 20px;
-	color: var(--main);
-	background-color: var(--background);
-}
-body {
-	margin: 0 auto;
-	max-width: 50em;
-	padding: 0;
-	hyphens: auto;
-	word-wrap: break-word;
-	text-rendering: optimizeLegibility;
-	font-kerning: normal;
-}
-@media (max-width: 600px) {
-	body {
-		font-size: 0.9em;
-		padding: 1em;
-	}
-}
-@media print {
-	body {
-		background-color: transparent;
-		color: black;
-		font-size: 12pt;
-	}
-	p,
-	h2,
-	h3 {
-		orphans: 3;
-		widows: 3;
-	}
-	h2,
-	h3,
-	h4 {
-		page-break-after: avoid;
-	}
-}
+
+
 p {
 	margin: 1em 0;
 }
-a {
-	color: var(--main);
-}
-a:visited {
-	color: var(--main);
-}
 img {
 	max-width: 100%;
+	max-height: 70vh;
 }
 h1,
 h2,
@@ -141,7 +85,7 @@ th {
 td {
 	padding: 0.125em 0.5em 0.25em 0.5em;
 }
-header {
+div#body > header {
 	margin-bottom: 4em;
 	text-align: center;
 }

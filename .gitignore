@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 target/
+out/
 Cargo.lock
 hs_err*
 *.class
