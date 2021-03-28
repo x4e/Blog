@@ -45,7 +45,7 @@ tagPath = Path(outPath, "tag").resolve()
 
 if outPath.exists():
 	remove_tree(outPath)
-	outPath.mkdir()
+outPath.mkdir()
 
 
 # Create a symlink in the out folder to the resources
