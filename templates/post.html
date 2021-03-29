@@ -53,9 +53,9 @@
 				$if(subtitle)$
 				<p class="subtitle">$subtitle$</p>
 				$endif$
-				$for(author)$
-				<p class="author">$author$</p>
-				$endfor$
+				$if(keywords)$
+				<p class="keyword">$for(keywords)$<a href='/tag/$keywords$'>$keywords$</a>$sep$, $endfor$</p>
+				$endif$
 				$if(date)$
 				<p class="date">$date$</p>
 				$endif$

@@ -1,12 +1,12 @@
 ---
-title: "Why Bitcoin Has Failed and the Future of Payment Cryptos"
+title: "Why Bitcoin Has Failed - and the Future of Electronic Cash"
 author: x4e
 keywords: [cryptocurrency,bitcoin,nano,bitcoin cash]
 description: "A criticism of Bitcoin and an evaluation of it's competitors"
 date: 4th February 2021
 ---
 
-Bitcoin's white paper presents it as a "peer-to-peer electronic cash system", however I do not believe that Bitcoin has fulfilled the requirements of cash.
+Bitcoin's white paper presents it as a "peer-to-peer electronic cash system" ^[<https://bitcoin.org/bitcoin.pdf>], however I do not believe that Bitcoin has fulfilled the requirements of cash.
 
 ## The problems with Bitcoin
 
@@ -52,7 +52,7 @@ Decentralized currencies only work when consensus can be reached. Because of thi
 
 ## Nano
 
-Nano was created under the name RaiBlocks (XRB) in 2014/15. Nano uses a block lattice to give each account its own blockchain, with each transaction being its own block. Since there are multiple blockchains, transactions on each blockchain can be performed asynchronously. 
+[Nano](https://nano.org) was created under the name RaiBlocks (XRB) in 2014/15. Nano uses a block lattice to give each account its own blockchain, with each transaction being its own block. Since there are multiple blockchains, transactions on each blockchain can be performed asynchronously. 
 
 Nano also does not have every node validating blocks, instead users vote with their account balance for a representative who will perform validation for them. Representatives do not gain any monetary reward, resulting in a more decentralized network as nodes are typically run by individuals rather than large mining companies. This also allows transactions to have 0 fees.
 

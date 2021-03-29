@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 
 import os
 import subprocess
@@ -67,13 +67,13 @@ def gatherPosts(rootPath):
 		
 		# Use the lua filter to get post details from the yaml metadata
 		(title, author, keywords, description, date) = \
-			execute(["pandoc", "-L", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
+			execute(["pandoc", "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
 		keywords = frozenset(keywords.split(","))
 		dateStr = date
 		date = date.replace("th ", " ").replace("st ", " ").replace("rd ", " ")
 		date = datetime.strptime(date, "%d %B %Y")
 	
-		wordCount = int(execute("pandoc -L filters/wordcount.lua " + sourceStr))
+		wordCount = int(execute(["pandoc", "--lua-filter", "filters/wordcount.lua", sourceStr]))
 		timeToRead = wordCount // 220 # estimate 220 wpm reading speed
 	
 		postDetails = Post(
@@ -123,11 +123,11 @@ def compile(sourcePath):
 		"--highlight-style", "espresso",
 		"--email-obfuscation", "references",
 		"--indented-code-classes", "numberLines",
-		"--mathml", "-L", "filters/math2svg.lua",
+		"--mathml", "--lua-filter", "filters/math2svg.lua",
 		"--template", "templates/post_temp.html",
 		"--css", "/resources/styles.css",
 		"--css", "/resources/post.css",
-		"-L", "filters/lineallcode.lua",
+		"--lua-filter", "filters/lineallcode.lua",
 	]
 	execute(args)
 
