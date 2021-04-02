@@ -50,6 +50,10 @@ def deleteRemoveOnExists():
 atexit.register(deleteRemoveOnExists)
 
 
+pandoc = "pandoc"
+if "PANDOC" in os.environ:
+	pandoc = os.environ["PANDOC"]
+
 rootPath = Path(".").resolve()
 rootStr = str(rootPath)
 outPath = Path("out").resolve()
@@ -90,7 +94,7 @@ def gatherPosts(rootPath):
 		
 		# Use the lua filter to get post details from the yaml metadata
 		(title, author, keywords, description, date) = \
-			execute(["pandoc", "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
+			execute([pandoc, "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
 		keywords = frozenset(keywords.split(","))
 		title = title.encode('ascii', 'xmlcharrefreplace').decode() # encode any non ascii chars
 		description = description.encode('ascii', 'xmlcharrefreplace').decode() # encode any non ascii chars
@@ -98,7 +102,7 @@ def gatherPosts(rootPath):
 		date = date.replace("th ", " ").replace("st ", " ").replace("rd ", " ")
 		date = datetime.strptime(date, "%d %B %Y")
 	
-		wordCount = int(execute(["pandoc", "--lua-filter", "filters/wordcount.lua", sourceStr]))
+		wordCount = int(execute([pandoc, "--lua-filter", "filters/wordcount.lua", sourceStr]))
 		timeToRead = wordCount // 220 # estimate 220 wpm reading speed
 	
 		postDetails = Post(
@@ -140,7 +144,7 @@ def compileMarkdown(sourcePath, allTagsHtml):
 	
 	print("Compiling " + sourceStr)
 	args = [
-		"pandoc",
+		pandoc,
 		sourceStr,
 		"-o", targetStr,
 		"-f", "markdown+lists_without_preceding_blankline+emoji+backtick_code_blocks+fenced_code_attributes",
@@ -190,7 +194,7 @@ indexTemplate = Path(rootPath, "templates/index_tmp.html").resolve()
 indexOut = Path(outPath, "index.html").resolve()
 print("Compiling {}".format(str(indexTemplate)))
 execute([
-	"pandoc",
+	pandoc,
 	"-o", str(indexOut),
 	"-V", "TAGS={}".format(allTagsHtml),
 	"-V", "POSTS={}".format(allPostsHtml),
@@ -211,7 +215,7 @@ notFoundTemplate = Path(rootPath, "templates/404_tmp.html").resolve()
 notFoundOut = Path(outPath, "404.html").resolve()
 print("Compiling {}".format(str(notFoundTemplate)))
 execute([
-	"pandoc",
+	pandoc,
 	"-o", str(notFoundOut),
 	"-V", "TAGS={}".format(allTagsHtml),
 	"-V", "POSTS={}".format(allPostsHtml),
@@ -240,7 +244,7 @@ for (tag, posts) in tags.items():
 	print("Compiling {}".format(str(outPath)))
 	mkpath(str(outPath.parent))
 	execute([
-		"pandoc",
+		pandoc,
 		"-o", str(outPath),
 		"-V", "TAGS={}".format(allTagsHtml),
 		"-V", "TAG={}".format(tag),
