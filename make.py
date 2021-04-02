@@ -65,7 +65,7 @@ outPath.mkdir()
 Path(outPath, "resources").symlink_to(resourcePath, target_is_directory=True)
 
 
-templates = ["index", "post", "tag"]
+templates = ["index", "post", "tag", "404"]
 mainTemplate = Path(rootPath, "templates/maintemplate.html").read_text()
 for template in templates:
 	origPath = Path(rootPath, "templates/{}.html".format(template))
@@ -130,7 +130,7 @@ def gatherPosts(rootPath):
 	return (posts, tags)
 
 # Compile a markdown file at sourcePath
-def compile(sourcePath, allTagsHtml):
+def compileMarkdown(sourcePath, allTagsHtml):
 	sourceStr = str(sourcePath)
 	# Get absolute source path, remove prefix of the rootDir, then swap extension from md to html
 	targetPath = Path(outPath, str(sourcePath.resolve())[len(rootStr) + 1:-3] + ".html")
@@ -185,9 +185,10 @@ postsToHtml = {post: postToHtml(post) for post in posts}
 allPostsHtml = "\n".join(postsToHtml.values())
 
 
-# Do the index's templating
+# index.html
+indexTemplate = Path(rootPath, "templates/index_tmp.html").resolve()
 indexOut = Path(outPath, "index.html").resolve()
-print("Compiling {}".format(str(indexOut)))
+print("Compiling {}".format(str(indexTemplate)))
 execute([
 	"pandoc",
 	"-o", str(indexOut),
@@ -200,7 +201,28 @@ execute([
 	"--highlight-style", "espresso",
 	"--email-obfuscation", "references",
 	"--indented-code-classes", "numberLines",
-	"--template", "templates/index_tmp.html",
+	"--template", str(indexTemplate),
+	"--css", "/resources/styles.css",
+	"--css", "/resources/index.css",
+], input="")
+
+# 404.html
+notFoundTemplate = Path(rootPath, "templates/404_tmp.html").resolve()
+notFoundOut = Path(outPath, "404.html").resolve()
+print("Compiling {}".format(str(notFoundTemplate)))
+execute([
+	"pandoc",
+	"-o", str(notFoundOut),
+	"-V", "TAGS={}".format(allTagsHtml),
+	"-V", "POSTS={}".format(allPostsHtml),
+	"-V", "pagetitle=404 not found",
+	"-V", "description=Posts about reverse engineering",
+	"-V", "keywords=x4e, blog, reverse engineering",
+	"--standalone",
+	"--highlight-style", "espresso",
+	"--email-obfuscation", "references",
+	"--indented-code-classes", "numberLines",
+	"--template", str(notFoundTemplate),
 	"--css", "/resources/styles.css",
 	"--css", "/resources/index.css",
 ], input="")
@@ -208,7 +230,7 @@ execute([
 
 # Compile all markdown files
 for file in rootPath.glob("*/*.md"):
-	compile(file, allTagsHtml)
+	compileMarkdown(file, allTagsHtml)
 
 
 # Create pages for each tag
