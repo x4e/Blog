@@ -51,6 +51,8 @@ def deleteRemoveOnExists():
 atexit.register(deleteRemoveOnExists)
 
 
+DATETIME_FORMAT = "%Y-%m-%dT%T%zZ"
+
 pandoc = "pandoc"
 if "PANDOC" in os.environ:
 	pandoc = os.environ["PANDOC"]
@@ -281,11 +283,11 @@ xml = minidom.Document()
 atom = createText(xml, "feed", None, xmlns="http://www.w3.org/2005/Atom")
 atom.xmlns = "http://www.w3.org/2005/Atom"
 
-atom.appendChild(createText(xml, "id", "https://blog.binclub.dev"))
+atom.appendChild(createText(xml, "id", "https://blog.binclub.dev/"))
 atom.appendChild(createText(xml, "title", "x4e's blog"))
 atom.appendChild(createText(xml, "subtitle", "Posts about reverse engineering"))
-atom.appendChild(createText(xml, "updated", str(date.today())))
-atom.appendChild(createText(xml, "link", None, href="https://blog.binclub.dev", rel="alternate"))
+atom.appendChild(createText(xml, "updated", date.today().strftime(DATETIME_FORMAT)))
+atom.appendChild(createText(xml, "link", None, href="https://blog.binclub.dev/", rel="alternate"))
 atom.appendChild(createText(xml, "link", None, href="https://blog.binclub.dev/feed.xml", rel="self"))
 atom.appendChild(createText(xml, "category", None, term="x4e"))
 atom.appendChild(createText(xml, "category", None, term="blog"))
@@ -294,7 +296,7 @@ atom.appendChild(createText(xml, "category", None, term="reverse engineering"))
 author = xml.createElement("author")
 author.appendChild(createText(xml, "name", "x4e"))
 author.appendChild(createText(xml, "email", "x4e_x4e@protonmail.com"))
-author.appendChild(createText(xml, "uri", "https://blog.binclub.dev"))
+author.appendChild(createText(xml, "uri", "https://blog.binclub.dev/"))
 atom.appendChild(author)
 
 for post in posts:
@@ -302,11 +304,10 @@ for post in posts:
 	item = xml.createElement("entry")
 	item.appendChild(createText(xml, "id", uri))
 	item.appendChild(createText(xml, "title", post.title))
-	item.appendChild(createText(xml, "published", str(post.date)))
-	item.appendChild(createText(xml, "updated", str(post.date)))
+	item.appendChild(createText(xml, "published", post.date.strftime(DATETIME_FORMAT)))
+	item.appendChild(createText(xml, "updated", post.date.strftime(DATETIME_FORMAT)))
 	item.appendChild(createText(xml, "summary", post.description))
 	item.appendChild(createText(xml, "link", None, href=uri, rel="alternate"))
-	item.appendChild(createText(xml, "language", "en-GB"))
 	for keyword in post.keywords:
 		item.appendChild(createText(xml, "category", None, term=keyword))
 	atom.appendChild(item)
