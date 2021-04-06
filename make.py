@@ -5,7 +5,7 @@ import urllib
 import atexit
 import subprocess
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 from dataclasses import dataclass
 from distutils.dir_util import mkpath, copy_tree, remove_tree
 
@@ -32,6 +32,7 @@ class Post(object):
 	description: str
 	dateStr: str
 	date: datetime
+	content: str
 	
 	def __repr__(self):
 		return self.title
@@ -88,7 +89,7 @@ def gatherPosts(rootPath):
 	# We assume every index.md file is a blog post
 	for sourcePath in rootPath.glob("*/index.md"):
 		sourceStr = str(sourcePath)
-		print("Indexing {}".format(sourceStr))
+		print("Indexing", sourceStr)
 		
 		relativePath = sourceStr[len(rootStr):]
 		
@@ -96,15 +97,16 @@ def gatherPosts(rootPath):
 		(title, author, keywords, description, date) = \
 			execute([pandoc, "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
 		keywords = frozenset(keywords.split(","))
-		title = title.encode('ascii', 'xmlcharrefreplace').decode() # encode any non ascii chars
-		description = description.encode('ascii', 'xmlcharrefreplace').decode() # encode any non ascii chars
 		dateStr = date
 		date = date.replace("th ", " ").replace("st ", " ").replace("rd ", " ")
 		date = datetime.strptime(date, "%d %B %Y")
 	
 		wordCount = int(execute([pandoc, "--lua-filter", "filters/wordcount.lua", sourceStr]))
 		timeToRead = wordCount // 220 # estimate 220 wpm reading speed
-	
+		
+		content = sourcePath.read_text()
+		content = content[content.index("---", 3) + 3:].strip() # trim the header from the content
+		
 		postDetails = Post(
 			path= relativePath[:-8], # remove /index.md to get relative directory
 			time= str(timeToRead) + " mins",
@@ -114,6 +116,7 @@ def gatherPosts(rootPath):
 			description= description,
 			dateStr= dateStr,
 			date= date,
+			content= content,
 		)
 		
 		posts.append(postDetails)
@@ -142,7 +145,7 @@ def compileMarkdown(sourcePath, allTagsHtml):
 	
 	mkpath(str(targetPath.parent.resolve()))
 	
-	print("Compiling " + sourceStr)
+	print("Compiling", sourceStr)
 	args = [
 		pandoc,
 		sourceStr,
@@ -174,7 +177,10 @@ allTagsHtml = "\n".join(tagsToHtml.values())
 
 # Generate html representation of every post
 def postToHtml(post):
-	encoded = urllib.parse.quote(post.path, safe='/')
+	# encode any non ascii chars
+	encodedTitle = post.title.encode('ascii', 'xmlcharrefreplace').decode()
+	encodedDesc = post.description.encode('ascii', 'xmlcharrefreplace').decode()
+	encodedPath = urllib.parse.quote(post.path, safe='/')
 	tags = ", ".join(map(tagToLink, post.keywords))
 	return """
 	<div id='post'>
@@ -184,7 +190,7 @@ def postToHtml(post):
 		<small><span class='post-date'>{}</span> - <span class='post-tags'>{}</span></small>
 		<p>{}</p>
 	</div>
-	""".format(encoded, post.title, post.dateStr, tags, post.description)
+	""".format(encodedPath, encodedTitle, post.dateStr, tags, encodedDesc)
 postsToHtml = {post: postToHtml(post) for post in posts}
 allPostsHtml = "\n".join(postsToHtml.values())
 
@@ -192,7 +198,7 @@ allPostsHtml = "\n".join(postsToHtml.values())
 # index.html
 indexTemplate = Path(rootPath, "templates/index_tmp.html").resolve()
 indexOut = Path(outPath, "index.html").resolve()
-print("Compiling {}".format(str(indexTemplate)))
+print("Compiling", str(indexTemplate))
 execute([
 	pandoc,
 	"-o", str(indexOut),
@@ -213,7 +219,7 @@ execute([
 # 404.html
 notFoundTemplate = Path(rootPath, "templates/404_tmp.html").resolve()
 notFoundOut = Path(outPath, "404.html").resolve()
-print("Compiling {}".format(str(notFoundTemplate)))
+print("Compiling", str(notFoundTemplate))
 execute([
 	pandoc,
 	"-o", str(notFoundOut),
@@ -236,19 +242,17 @@ execute([
 for file in rootPath.glob("*/*.md"):
 	compileMarkdown(file, allTagsHtml)
 
-
 # Create pages for each tag
-for (tag, posts) in tags.items():
-	posts = "\n".join(map(lambda post: postsToHtml[post], posts))
-	outPath = Path(tagPath, "{}/index.html".format(tag)).resolve()
-	print("Compiling {}".format(str(outPath)))
-	mkpath(str(outPath.parent))
+for (tag, tagPosts) in tags.items():
+	postsHtml = "\n".join(map(lambda post: postsToHtml[post], tagPosts))
+	tagOutPath = Path(tagPath, "{}/index.html".format(tag)).resolve()
+	mkpath(str(tagOutPath.parent))
 	execute([
 		pandoc,
-		"-o", str(outPath),
+		"-o", str(tagOutPath),
 		"-V", "TAGS={}".format(allTagsHtml),
 		"-V", "TAG={}".format(tag),
-		"-V", "POSTS={}".format(posts),
+		"-V", "POSTS={}".format(postsHtml),
 		"-V", "pagetitle=Posts tagged with {}".format(tag),
 		"-V", "description=All posts with {} tag".format(tag),
 		"-V", "keywords=x4e, blog, reverse engineering, {}".format(tag),
@@ -260,3 +264,59 @@ for (tag, posts) in tags.items():
 		"--css", "/resources/styles.css",
 		"--css", "/resources/index.css",
 	], input="")
+
+from xml.dom import minidom
+
+def createText(document, elementName, text, **kwargs):
+	out = document.createElement(elementName)
+	if text != None:
+		out.appendChild(document.createTextNode(text))
+	for key in kwargs:
+		out.setAttribute(key, kwargs[key])
+	return out
+
+xmlOut = Path(outPath, "feed.xml").resolve()
+print("Compiling", xmlOut)
+xml = minidom.Document()
+atom = createText(xml, "feed", None, xmlns="http://www.w3.org/2005/Atom")
+atom.xmlns = "http://www.w3.org/2005/Atom"
+
+atom.appendChild(createText(xml, "id", "https://blog.binclub.dev"))
+atom.appendChild(createText(xml, "title", "x4e's blog"))
+atom.appendChild(createText(xml, "subtitle", "Posts about reverse engineering"))
+atom.appendChild(createText(xml, "updated", str(date.today())))
+atom.appendChild(createText(xml, "link", None, href="https://blog.binclub.dev", rel="alternate"))
+atom.appendChild(createText(xml, "link", None, href="https://blog.binclub.dev/feed.xml", rel="self"))
+atom.appendChild(createText(xml, "category", None, term="x4e"))
+atom.appendChild(createText(xml, "category", None, term="blog"))
+atom.appendChild(createText(xml, "category", None, term="reverse engineering"))
+
+author = xml.createElement("author")
+author.appendChild(createText(xml, "name", "x4e"))
+author.appendChild(createText(xml, "email", "x4e_x4e@protonmail.com"))
+author.appendChild(createText(xml, "uri", "https://blog.binclub.dev"))
+atom.appendChild(author)
+
+for post in posts:
+	uri = "https://blog.binclub.dev{}".format(post.path)
+	item = xml.createElement("entry")
+	item.appendChild(createText(xml, "id", uri))
+	item.appendChild(createText(xml, "title", post.title))
+	item.appendChild(createText(xml, "published", str(post.date)))
+	item.appendChild(createText(xml, "updated", str(post.date)))
+	item.appendChild(createText(xml, "summary", post.description))
+	item.appendChild(createText(xml, "link", None, href=uri, rel="alternate"))
+	item.appendChild(createText(xml, "language", "en-GB"))
+	for keyword in post.keywords:
+		item.appendChild(createText(xml, "category", None, term=keyword))
+	atom.appendChild(item)
+	
+	content = post.content
+	content.replace("\n", "<br>\n")
+	cdata = xml.createCDATASection()
+	contentNode = createText(xml, "content", None, type="text/markdown", src=uri)
+	contentNode.appendChild(cdata)
+	item.appendChild(contentNode)
+
+xml.appendChild(atom)
+xmlOut.write_text(xml.toprettyxml(indent ="\t"))
