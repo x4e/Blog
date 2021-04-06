@@ -313,7 +313,7 @@ for post in posts:
 	
 	content = post.content
 	content.replace("\n", "<br>\n")
-	cdata = xml.createCDATASection()
+	cdata = xml.createCDATASection(content)
 	contentNode = createText(xml, "content", None, type="text/markdown", src=uri)
 	contentNode.appendChild(cdata)
 	item.appendChild(contentNode)
