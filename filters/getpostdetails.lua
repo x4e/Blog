@@ -35,5 +35,10 @@ function Meta(meta)
 	print(stringify(meta.description))
 	print(stringify(meta.date))
 	print(arrToStr(meta.resources))
+	if meta.unlisted then
+		print("true")
+	else
+		print("false")
+	end
 	os.exit(0)
 end

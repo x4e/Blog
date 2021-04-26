@@ -1,7 +1,7 @@
 ---
 title: "Installing Arch Linux on my Chromebook"
 author: x4e
-keywords: [linux,hardware,chromebook,arch linux,asus c223n]
+keywords: [linux,hardware]
 description: "A walkthrough of how I installed Linux on my ApolloLake Chromebook"
 date: 20th February 2021
 resources: [batteryconnector.webp]

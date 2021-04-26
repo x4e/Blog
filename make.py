@@ -40,6 +40,7 @@ class Post(object):
 	date: datetime
 	content: str
 	resources: frozenset
+	unlisted: bool
 	
 	def __repr__(self):
 		return self.title
@@ -103,13 +104,14 @@ def gatherPosts(rootPath):
 		relativePath = sourceStr[len(rootStr):]
 		
 		# Use the lua filter to get post details from the yaml metadata
-		(title, author, keywords, description, date, resources) = \
+		(title, author, keywords, description, date, resources, unlisted) = \
 			execute([pandoc, "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
 		keywords = frozenset(parseLuaArr(keywords))
 		resources = frozenset(parseLuaArr(resources))
 		dateStr = date
 		date = date.replace("th ", " ").replace("st ", " ").replace("rd ", " ")
 		date = datetime.strptime(date, "%d %B %Y")
+		unlisted = unlisted == "true"
 	
 		wordCount = int(execute([pandoc, "--lua-filter", "filters/wordcount.lua", sourceStr]))
 		timeToRead = wordCount // 220 # estimate 220 wpm reading speed
@@ -128,6 +130,7 @@ def gatherPosts(rootPath):
 			date= date,
 			content= content,
 			resources= resources,
+			unlisted= unlisted
 		)
 		
 		posts.append(postDetails)
@@ -149,6 +152,9 @@ def gatherPosts(rootPath):
 	posts = sorted(posts, key=lambda item: item.date, reverse=True)
 	
 	for post in posts:
+		if post.unlisted:
+			continue
+		
 		for keyword in post.keywords:
 			if keyword not in tags:
 				tags[keyword] = [post]
@@ -174,7 +180,7 @@ def compileMarkdown(sourcePath, allTagsHtml):
 		pandoc,
 		sourceStr,
 		"-o", targetStr,
-		"-f", "markdown+lists_without_preceding_blankline+emoji+backtick_code_blocks+fenced_code_attributes",
+		"-f", "commonmark_x+yaml_metadata_block",
 		"-V", "TAGS={}".format(allTagsHtml),
 		"--standalone",
 		"--highlight-style", "espresso",
@@ -215,7 +221,7 @@ def postToHtml(post):
 		<p>{}</p>
 	</div>
 	""".format(encodedPath, encodedTitle, post.dateStr, tags, encodedDesc)
-postsToHtml = {post: postToHtml(post) for post in posts}
+postsToHtml = {post: postToHtml(post) for post in posts if not post.unlisted}
 allPostsHtml = "\n".join(postsToHtml.values())
 
 
@@ -266,6 +272,7 @@ execute([
 for file in rootPath.glob("*/*.md"):
 	compileMarkdown(file, allTagsHtml)
 
+print("Compiling tags")
 # Create pages for each tag
 for (tag, tagPosts) in tags.items():
 	postsHtml = "\n".join(map(lambda post: postsToHtml[post], tagPosts))

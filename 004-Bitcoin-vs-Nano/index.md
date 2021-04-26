@@ -1,7 +1,7 @@
 ---
 title: "Why Bitcoin Has Failed - and the Future of Electronic Cash"
 author: x4e
-keywords: [cryptocurrency,bitcoin,nano,bitcoin cash]
+keywords: [cryptocurrency]
 description: "A criticism of Bitcoin and an evaluation of it's competitors"
 date: 4th February 2021
 ---
