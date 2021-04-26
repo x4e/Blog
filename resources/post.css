@@ -6,7 +6,7 @@ figure {
 figcaption {
 	text-align: center;
 }
-img {
+img, embed {
 	max-width: 100%;
 	max-height: 70vh;
 	margin: 0 auto;
