@@ -4,6 +4,7 @@ author: x4e
 keywords: [linux,hardware,chromebook,arch linux,asus c223n]
 description: "A walkthrough of how I installed Linux on my ApolloLake Chromebook"
 date: 20th February 2021
+resources: [batteryconnector.webp]
 ---
 
 I bought a Chromebook a couple of years ago to do school work on — it only cost about £100 and was very small and light, perfect for carrying around school. At the time I had never experienced Linux and was fine with storing all my stuff on Google Docs/drive etc.
@@ -16,7 +17,7 @@ My particular Chromebook is an Asus c223n with an Apollolake processor. Here are
 
 2. In ApolloLake the firmware read/write protection is active when the battery is plugged in (as opposed to a screw being present in other Chromebooks). To disable this open up the back of the Laptop and disconnect the battery from the motherboard (connected via 8 multicoloured wires). This is done by pulling the metallic holder off the top of the white cable head, then pulling the cable head up and out of the socket. I just folded the wires back so that the cable head was in between the bottom of the battery and the laptop case. This will of course mean you will need a stable power connection during the rest of the installation.
 
-![Image of battery power connector](https://i.imgur.com/IynkCjK.jpeg)
+![Image of battery power connector](batteryconnector.webp)
 
 3. Boot using the power cable as the power source and open Chrome. Press Control+Alt+T to open crosh and use the `shell` command to open a shell. Use [Mr Chromebox's script](https://mrchromebox.tech/#fwscript) to install RW_LEGACY firmware.
 

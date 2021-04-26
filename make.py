@@ -22,6 +22,12 @@ def execute(args, input=None):
 	
 	return res.stdout
 
+def parseLuaArr(text):
+	if not text or text == "[]":
+		return []
+	else:
+		return text.split(",")
+
 @dataclass(frozen=True, repr=False)
 class Post(object):
 	path: str
@@ -33,6 +39,7 @@ class Post(object):
 	dateStr: str
 	date: datetime
 	content: str
+	resources: frozenset
 	
 	def __repr__(self):
 		return self.title
@@ -96,9 +103,10 @@ def gatherPosts(rootPath):
 		relativePath = sourceStr[len(rootStr):]
 		
 		# Use the lua filter to get post details from the yaml metadata
-		(title, author, keywords, description, date) = \
+		(title, author, keywords, description, date, resources) = \
 			execute([pandoc, "--lua-filter", "filters/getpostdetails.lua", sourceStr]).strip().split("\n")
-		keywords = frozenset(keywords.split(","))
+		keywords = frozenset(parseLuaArr(keywords))
+		resources = frozenset(parseLuaArr(resources))
 		dateStr = date
 		date = date.replace("th ", " ").replace("st ", " ").replace("rd ", " ")
 		date = datetime.strptime(date, "%d %B %Y")
@@ -119,9 +127,23 @@ def gatherPosts(rootPath):
 			dateStr= dateStr,
 			date= date,
 			content= content,
+			resources= resources,
 		)
 		
 		posts.append(postDetails)
+		
+		# Create symlinks to the resources
+		if resources:
+			# Remove the beginning "/" as this will resolve as root on a filesystem
+			relPath = postDetails.path[1:]
+			targetPath = Path(outPath, relPath)
+			mkpath(str(targetPath.parent.resolve()))
+			mkpath(str(targetPath.resolve()))
+			
+			for resource in resources:
+				resPath = Path(sourcePath.parent, resource)
+				resSymPath = Path(targetPath, resource)
+				resSymPath.symlink_to(resPath, target_is_directory=False)
 	
 	# Sort posts based on the creation date
 	posts = sorted(posts, key=lambda item: item.date, reverse=True)
