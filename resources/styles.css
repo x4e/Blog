@@ -19,7 +19,7 @@ html {
 	
 	line-height: 1.5;
 	font-family: sans-serif, serif;
-	font-size: 20px;
+	/*font-size: 16px;*/
 	color: var(--main);
 	background-color: var(--background);
 }
@@ -44,6 +44,7 @@ body {
 header#main-header {
 	position: sticky;
 	top: 0;
+	padding: 5px;
 }
 
 header#main-header > h1.title {
@@ -64,8 +65,13 @@ header#main-header > nav.tags {
 	text-align: left;
 }
 
-header#main-header > ul.links {
+header#main-header > nav > ul {
+	padding-left: 1em;
+}
+
+header#main-header > ul {
 	text-align: left;
+	padding-left: 1em;
 }
 
 div#body {
