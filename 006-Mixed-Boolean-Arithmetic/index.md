@@ -4,7 +4,6 @@ author: x4e
 keywords: [jvm,bytecode,obfuscation]
 description: "Obfuscating mathematical operations with MBA"
 date: 29th March 2021
-unlisted: true
 ---
 
 Mathematical operations are central to modern computers, with every program making extensive use of them.
