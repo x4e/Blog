@@ -12,7 +12,7 @@ Bitcoin's white paper presents it as a "peer-to-peer electronic cash system" ^[<
 
 Firstly, here is the absolute minimum I expect out of a form of cash:
 
-* Widely recognized as being of value
+* Widely recognised as being of value
 * Irreversible transactions
 * Easy to hold reasonable amounts
 * Hard to forge (transactions and balances)
@@ -20,7 +20,7 @@ Firstly, here is the absolute minimum I expect out of a form of cash:
 
 Each of these are satisfied by my local fiat, GBP, however they are not all satisfied by Bitcoin:
 
-* Bitcoin is recognized as being of value nowadays, this is satisfied
+* Bitcoin is recognised as being of value nowadays, this is satisfied
 * Bitcoin transactions cannot be reversed (at least certainly after they have been accepted into a block)
 * Vast amounts of Bitcoin are easily held
 * It is impractical to forge transactions and balances are impossible to forged
@@ -47,18 +47,18 @@ Since the fork, Bitcoin Cash itself has hard forked multiple times, splitting th
 
 Each of these forks have split the community and developers, and many communities still call the minority forks Bitcoin Cash, creating a lot of confusion. For example, [bitcoincash.org](https://www.bitcoincash.org/) seems to promote BCH however it is operated by BCHA and leads users to BCHA services.
 
-Decentralized currencies only work when consensus can be reached. Because of this split, unclear, and disagreeing community I do not have much hope for the future of BCH and I do not hold any.
+Decentralised currencies only work when consensus can be reached. Because of this split, unclear, and disagreeing community I do not have much hope for the future of BCH and I do not hold any.
 
 
 ## Nano
 
 [Nano](https://nano.org) was created under the name RaiBlocks (XRB) in 2014/15. Nano uses a block lattice to give each account its own blockchain, with each transaction being its own block. Since there are multiple blockchains, transactions on each blockchain can be performed asynchronously. 
 
-Nano also does not have every node validating blocks, instead users vote with their account balance for a representative who will perform validation for them. Representatives do not gain any monetary reward, resulting in a more decentralized network as nodes are typically run by individuals rather than large mining companies. This also allows transactions to have 0 fees.
+Nano also does not have every node validating blocks, instead users vote with their account balance for a representative who will perform validation for them. Representatives do not gain any monetary reward, resulting in a more decentralised network as nodes are typically run by individuals rather than large mining companies. This also allows transactions to have 0 fees.
 
 Nano has an average transaction confirmation time of 0.2 seconds and has succeeded tests of handling up to 1800 transactions per second (compared to bitcoin's 3-4).
 
 
 ## Conclusion
 
-Many currencies have tried to improve upon Bitcoin, like Bitcoin Cash and Nano. These don't seem to have gained as much attention as the Ethereum competitors have recently, but they will still have a large effect on the future of CryptoCurrencies. Bitcoin Cash attempts to build upon Bitcoin's design by making tweaks to components such as the block size, whereas Nano is an entirely new protocol designed to be asynchronous, fast and fee-less.
+Many currencies have tried to improve upon Bitcoin, like Bitcoin Cash and Nano. These don't seem to have gained as much attention as the Ethereum competitors have recently, but they will still have a large effect on the future of Cryptocurrencies. Bitcoin Cash attempts to build upon Bitcoin's design by making tweaks to components such as the block size, whereas Nano is an entirely new protocol designed to be asynchronous, fast and fee-less.

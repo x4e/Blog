@@ -128,7 +128,7 @@ You can test this by running [run.sh](https://github.com/x4e/Blog/blob/master/00
 
 As it turns out, this can be used to bypass verification on up to **Java 7** class files. That's pretty big for obfuscators, as Java 7 still supports features like InvokeDynamic, and it is possible to convert Java 8 classes into Java 7.
 
-It turns out that the JVM is able to failover to the old split verifier if a class file (with a version <=J7) fails the new verification
+It turns out that the JVM is able to fail over to the old split verifier if a class file (with a version <=J7) fails the new verification
 
 [verifier.cpp#L194](https://github.com/openjdk/jdk/blob/976acddeb5a8df1e868269787c023306aad3fe4a/src/hotspot/share/classfile/verifier.cpp#L194)
 ```{.cpp startFrom="194"}

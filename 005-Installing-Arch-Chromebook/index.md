@@ -11,7 +11,7 @@ I bought a Chromebook a couple of years ago to do school work on — it only cos
 
 Last year I switched to Linux on my main laptop (one that's too large to use for school), and since then I've always wanted to be able to install it on my Chromebook. Unfortunately that's not easy — Chromebooks use a lot of obscure hardware for which drivers are only implemented in Chrome OS and not upstream Linux. Google also licenses Chromebook manufacturing and some parts of design to other manufactures, meaning that each Chromebook can be very different, and as such there is no single guide to install Linux on a Chromebook.
 
-My particular Chromebook is an Asus c223n with an Apollolake processor. Here are the steps I took to install Arch Linux:
+My particular Chromebook is an Asus c223n with an ApolloLake processor. Here are the steps I took to install Arch Linux:
 
 1. [Enable developer mode](https://www.howtogeek.com/210817/how-to-enable-developer-mode-on-your-chromebook/). This will result in a warning screen showing every time you boot up your computer - just press Control+D at this screen to boot Chrome OS as normal, or press Control+L for the SeaBIOS menu (for booting to a USB or other install).
 

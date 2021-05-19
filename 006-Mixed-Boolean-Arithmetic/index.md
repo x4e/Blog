@@ -22,7 +22,7 @@ On a more complex level, every single logic gate is usually implemented as a com
 With a couple of NAND gates you can simulate every other logical operation.
 
 The ability to combine boolean operations to simulate others allows options for obfuscation.
-A simple recognizable operation can be swapped for a combination of other operations whose purpose may not be easily understood.
+A simple recognisable operation can be swapped for a combination of other operations whose purpose may not be easily understood.
 
 There are many substitution rules that can be used to swap out complex boolean expressions for simplified ones.
 De Morgan's laws are an example of this.
@@ -34,7 +34,7 @@ While these rules can be used to simplify expressions, they can also be used for
 By simply swapping them around we get another perspective:
 $$ x \lor y \equiv \lnot (\lnot x \land \lnot y) $$
 
-We can very easily use this substitution to obscure code, however it is not paticularly good -- it is very repetive and patterns emerge very clearly.
+We can very easily use this substitution to obscure code, however it is not particularly good -- it is very repetitive and patterns emerge very clearly.
 
 To increase the diversity of the substitution, we can create our own and mix them together.
 Let's consider the purpose of an XOR operation (operating on a single bit). An XOR operation will return true if the two inputs are not equal to each other.
