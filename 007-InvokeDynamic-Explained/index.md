@@ -24,6 +24,19 @@ Method handles also store a "type" which describes the parameters it should be e
 
 ## Signature Polymorphic Methods
 
+Before we look at polymorphic signatures let's just remind ourselves of the Java types:
+
+|Descriptor|Description|
+|L[name];|Reference to an Object|
+|I|32bit integer|
+|B|Byte - erased to I at runtime|
+|C|Char - erased to I at runtime|
+|S|Short - erased to I at runtime|
+|Z|Boolean - erased to I at runtime|
+|F|32-bit floating point|
+|L|64-bit integer (long)|
+|D|64-bit floating point (double)|
+
 The signature of `Object.equals` is `(Ljava/lang/Object;)Z` -- the method takes an Object and returns a boolean.
 This is baked into the method and it's caller (an invokevirtual operation).
 
@@ -51,7 +64,9 @@ This means a polymorphic function could be declared like so (in the right class)
 ```Java
 final native Object myMethod(Object... args);
 ```
-The method's signature is identical to that of our Object polymorphic method, except this method has an annotation that tells the JVM to treat this method with a polymorphic signature.
+
+The method's signature is identical to that of the variable argument method, so it is easy to question how they are functionaly different.
+The difference is that although the method is **declared** with `Object` parameters, it can in fact be called with any parameters, including primitive ones.
 
 **Side Note:** If you look at the source of the signature polymorphic `invokeExact` method you will notice it has a special annotation:
 ```Java
@@ -76,6 +91,7 @@ public class Main {
 		Integer boxed = (Integer) myPolymorphicMethod(arr);
 	}
 	
+	// An attempt at a polymorphic method - doesn't really work
 	private static Object myPolymorphicMethod(Object... args) {
 		return null;
 	}
@@ -136,4 +152,4 @@ The value with these methods is obvious: the ability to invoke methods with any 
 
 ## Using Method Handles
 
-
+So let's say we want to allow the dynamic invocation of a user specified method which can take any number or type of arguments, including primitive ones.

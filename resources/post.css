@@ -20,7 +20,7 @@ blockquote {
 }
 code {
 	font-family: Menlo, Monaco, "Lucida Console", Consolas, monospace;
-	font-size: 85%;
+	font-size: 85% !important;
 	margin: 0;
 }
 pre {
