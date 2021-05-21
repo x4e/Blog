@@ -4,6 +4,7 @@ author: x4e
 keywords: [jvm,bytecode]
 description: "An explanation of what the invokedynamic instruction is and how it works"
 date: 27th April 2021
+unlisted: true
 ---
 
 In the Java Virtual Machine version 7 the `CONSTANT_InvokeDynamic` constant pool type was introduced, followed it's cousin the `CONSTANT_Dynamic` type in version 11.
