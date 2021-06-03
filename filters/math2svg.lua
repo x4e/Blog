@@ -52,7 +52,7 @@ local tex2svg = 'tex2svg'
 
 --  By default, DisplayMath is converted to SVG, whereas InlineMath is not.
 local display2svg = true
-local inline2svg  = false
+local inline2svg  = true
 --  The fallback is MathML when pandoc is executed with the --mathml argument.
 
 --  Textual annotation for speech

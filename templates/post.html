@@ -8,6 +8,7 @@
 $for(include-before)$
 $include-before$
 $endfor$
+
 $if(title)$
 <header id="title-block-header">
 	<h1 class="title">$title$</h1>
@@ -22,14 +23,18 @@ $if(title)$
 	$endif$
 </header>
 $endif$
+
+<div id="post-content">
 $body$
+</div>
+
 $for(include-after)$
 $include-after$
 $endfor$
 
 <hr>
 
-<p>You can post and view comments either below (if you have JavaScript enabled) or at <a href="https://github.com/x4e/Blog/issues/">github.com/x4e/Blog/issues/</a>.</p>
+<p>You can post and view comments either below (if JavaScript is available) or at <a href="https://github.com/x4e/Blog/issues/">github.com/x4e/Blog/issues/</a>.</p>
 
 <script src="https://utteranc.es/client.js"
 	repo="x4e/Blog"

@@ -71,6 +71,10 @@ atexit.register(deleteRemoveOnExists)
 DATETIME_FORMAT = "%Y-%m-%dT%T%zZ"
 
 pandoc = "pandoc"
+# Check if there is a pandoc binary in the current folder
+if Path("./pandoc").exists():
+	pandoc = "./pandoc"
+# Also allow overriding by env variables
 if "PANDOC" in os.environ:
 	pandoc = os.environ["PANDOC"]
 
@@ -184,7 +188,7 @@ def compileMarkdown(sourcePath, allTagsHtml):
 	
 	mkpath(str(targetPath.parent.resolve()))
 	
-	print("Compiling", sourceStr)
+	print("Compiling", sourceStr, "to", targetStr)
 	args = [
 		pandoc,
 		sourceStr,
