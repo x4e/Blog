@@ -52,6 +52,14 @@ body > .title,h1,h2,h3,h4,h5,h6,a,p,ol,ul,hr,div,header#title-block-header,secti
 	overflow-wrap: break-word;
 }
 
+body > div#post-content > ol,ul,li {
+	max-width: calc(100vw - (8px * 2) - 40px);
+}
+
+body > div#post-content > ol,ul,li > p {
+	max-width: 100%;
+}
+
 li {
 	text-align: initial !important;
 }
