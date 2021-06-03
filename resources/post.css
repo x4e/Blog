@@ -39,30 +39,9 @@ hr {
 	background-color: var(--main);
 	border: none;
 	height: 1px;
-	margin: 1em 0;
-}
-table {
-	margin: 1em 0;
-	border-collapse: collapse;
-	width: 100%;
-	overflow-x: auto;
-	display: block;
-	font-variant-numeric: lining-nums tabular-nums;
 }
 table caption {
 	margin-bottom: 0.75em;
-}
-tbody {
-	margin-top: 0.5em;
-	border-top: 1px solid var(--main);
-	border-bottom: 1px solid var(--main);
-}
-th {
-	border-top: 1px solid var(--main);
-	padding: 0.25em 0.5em 0.25em 0.5em;
-}
-td {
-	padding: 0.125em 0.5em 0.25em 0.5em;
 }
 div#body > header {
 	margin-bottom: 4em;
@@ -113,9 +92,6 @@ pre > code.sourceCode > span:empty {
 code.sourceCode > span {
 	color: inherit;
 	text-decoration: inherit;
-}
-div.sourceCode {
-	margin: 1em 0;
 }
 pre.sourceCode {
 	margin: 0;
@@ -190,6 +166,7 @@ code span.bn {
 	color: #44aa43;
 } /* BaseN */
 code span.bu {
+	color: #43a8ed;
 } /* BuiltIn */
 code span.cf {
 	color: #43a8ed;
@@ -210,7 +187,7 @@ code span.do {
 	font-style: italic;
 } /* Documentation */
 code span.dt {
-	text-decoration: underline;
+	color: #43a8ed;
 } /* DataType */
 code span.dv {
 	color: #44aa43;

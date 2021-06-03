@@ -17,6 +17,15 @@ def execute(args, input=None):
 	res = subprocess.run(args, input=input, text=True, capture_output=True)
 	
 	if res.returncode != 0:
+		print("CMD:")
+		cmdStr = "\""
+		for arg in args:
+			cmdStr += arg + "\" \""
+		cmdStr = cmdStr[:-2]
+		print(cmdStr)
+		print("STDOUT:")
+		print(res.stdout)
+		print("STDERR:")
 		print(res.stderr)
 		raise Exception("Running command " + str(args) + " encountered code " + str(res.returncode))
 	
@@ -80,7 +89,7 @@ outPath.mkdir()
 Path(outPath, "resources").symlink_to(resourcePath, target_is_directory=True)
 
 
-templates = ["index", "post", "tag", "404"]
+templates = ["index", "posts", "post", "tag", "404"]
 mainTemplate = Path(rootPath, "templates/maintemplate.html").read_text()
 for template in templates:
 	origPath = Path(rootPath, "templates/{}.html".format(template))
@@ -199,11 +208,12 @@ posts, tags = gatherPosts(rootPath)
 
 
 # Generate html representation of every tag
+print("Generating tag links")
 def tagToLink(tag):
 	encoded = urllib.parse.quote(tag, safe='/')
 	return "<a href='/tag/{}'>{}</a>".format(encoded, tag)
-tagsToHtml = {tag: "<li>{} ({})</li>".format(tagToLink(tag), len(tags[tag])) for tag in tags.keys()}
-allTagsHtml = "\n".join(tagsToHtml.values())
+tagsToHtml = {tag: "{} ({})".format(tagToLink(tag), len(tags[tag])) for tag in tags.keys()}
+allTagsHtml = ", ".join(tagsToHtml.values())
 
 # Generate html representation of every post
 def postToHtml(post):
@@ -225,48 +235,47 @@ postsToHtml = {post: postToHtml(post) for post in posts if not post.unlisted}
 allPostsHtml = "\n".join(postsToHtml.values())
 
 
+def compileTemplate(templateName, css=[], title="x4e's website"):
+	templatePath = Path(rootPath, "templates/{}_tmp.html".format(templateName)).resolve()
+	if templateName == "index":
+		templateOut = Path(outPath, "{}.html".format(templateName)).resolve()
+	else:
+		templateOut = Path(outPath, "{}/index.html".format(templateName)).resolve()
+	mkpath(str(templateOut.parent))
+	
+	print("Compiling", str(templatePath))
+		
+	command = [
+		pandoc,
+		"-o", str(templateOut),
+		"-V", "TAGS={}".format(allTagsHtml),
+		"-V", "POSTS={}".format(allPostsHtml),
+		"-V", "pagetitle={}".format(title),
+		"-V", "description=Posts about reverse engineering",
+		"-V", "keywords=x4e, blog, reverse engineering",
+		"--standalone",
+		"--highlight-style", "espresso",
+		"--email-obfuscation", "references",
+		"--indented-code-classes", "numberLines",
+		"--template", str(templatePath),
+		"--css", "/resources/styles.css",
+	]
+	
+	for sheet in css:
+		command.append("--css")
+		command.append("/resources/{}.css".format(sheet))
+	
+	execute(command, input="")
+
+
 # index.html
-indexTemplate = Path(rootPath, "templates/index_tmp.html").resolve()
-indexOut = Path(outPath, "index.html").resolve()
-print("Compiling", str(indexTemplate))
-execute([
-	pandoc,
-	"-o", str(indexOut),
-	"-V", "TAGS={}".format(allTagsHtml),
-	"-V", "POSTS={}".format(allPostsHtml),
-	"-V", "pagetitle=x4e's blog",
-	"-V", "description=Posts about reverse engineering",
-	"-V", "keywords=x4e, blog, reverse engineering",
-	"--standalone",
-	"--highlight-style", "espresso",
-	"--email-obfuscation", "references",
-	"--indented-code-classes", "numberLines",
-	"--template", str(indexTemplate),
-	"--css", "/resources/styles.css",
-	"--css", "/resources/index.css",
-], input="")
+compileTemplate("index", ["index"])
 
 # 404.html
-notFoundTemplate = Path(rootPath, "templates/404_tmp.html").resolve()
-notFoundOut = Path(outPath, "404.html").resolve()
-print("Compiling", str(notFoundTemplate))
-execute([
-	pandoc,
-	"-o", str(notFoundOut),
-	"-V", "TAGS={}".format(allTagsHtml),
-	"-V", "POSTS={}".format(allPostsHtml),
-	"-V", "pagetitle=404 not found",
-	"-V", "description=Posts about reverse engineering",
-	"-V", "keywords=x4e, blog, reverse engineering",
-	"--standalone",
-	"--highlight-style", "espresso",
-	"--email-obfuscation", "references",
-	"--indented-code-classes", "numberLines",
-	"--template", str(notFoundTemplate),
-	"--css", "/resources/styles.css",
-	"--css", "/resources/index.css",
-], input="")
+compileTemplate("404", title="404 Not Found")
 
+# posts.html
+compileTemplate("posts", title="x4e's blog posts")
 
 # Compile all markdown files
 for file in rootPath.glob("*/*.md"):

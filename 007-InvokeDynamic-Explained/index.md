@@ -7,7 +7,7 @@ date: 27th April 2021
 unlisted: true
 ---
 
-In the Java Virtual Machine version 7 the `CONSTANT_InvokeDynamic` constant pool type was introduced, followed it's cousin the `CONSTANT_Dynamic` type in version 11.
+In the Java Virtual Machine version 7 the `CONSTANT_InvokeDynamic` constant pool type was introduced, followed by its cousin the `CONSTANT_Dynamic` type in version 11.
 These two types are very complicated to understand and there seems to be a lack of sufficient resources to teach their purpose, functionality and use, so that is what I will attempt to do.
 
 # Method Handles
@@ -26,16 +26,17 @@ Method handles also store a "type" which describes the parameters it should be e
 
 Before we look at polymorphic signatures let's just remind ourselves of the Java types:
 
-|Descriptor|Description|
-|L[name];|Reference to an Object|
-|I|32bit integer|
-|B|Byte - erased to I at runtime|
-|C|Char - erased to I at runtime|
-|S|Short - erased to I at runtime|
-|Z|Boolean - erased to I at runtime|
-|F|32-bit floating point|
-|L|64-bit integer (long)|
-|D|64-bit floating point (double)|
+|Descriptor|Description                     |
+|----------|--------------------------------|
+|`L[name];`|Reference to an Object          |
+|`I`       |32bit integer                   |
+|`B`       |Byte - erased to I at runtime   |
+|`C`       |Char - erased to I at runtime   |
+|`S`       |Short - erased to I at runtime  |
+|`Z`       |Boolean - erased to I at runtime|
+|`F`       |32-bit floating point           |
+|`L`       |64-bit integer (long)           |
+|`D`       |64-bit floating point (double)  |
 
 The signature of `Object.equals` is `(Ljava/lang/Object;)Z` -- the method takes an Object and returns a boolean.
 This is baked into the method and it's caller (an invokevirtual operation).
@@ -54,9 +55,9 @@ This definition would not allow you to pass an integer (at least not without box
 
 [JVMS 2.9.3](https://docs.oracle.com/javase/specs/jvms/se15/html/jvms-2.html#jvms-2.9.3) defines a method as being signature polymorphic if:
 
-* It is declared in the java.lang.invoke.MethodHandle class or the java.lang.invoke.VarHandle class.
-* It has a single formal parameter of type Object[].
-* It has the ACC_VARARGS and ACC_NATIVE flags set.
+* It is declared in the `java.lang.invoke.MethodHandle` class or the `java.lang.invoke.VarHandle` class.
+* It has a single formal parameter of type `Object[]`.
+* It has the `ACC_VARARGS` and `ACC_NATIVE` flags set.
 
 (Note: No requirement on the return type)
 
@@ -150,6 +151,36 @@ These dynamic descriptors even extend to `void`, allowing polymorphic descriptor
 
 The value with these methods is obvious: the ability to invoke methods with any arguments, without overhead of primitive boxing/unboxing or array creation.
 
+## The benefits of Method Handles
+
+* **Signature Polymorphic**
+  
+  We already went through this one
+
+* **Smarter Access Controls**
+  
+  In reflection access controls are enforced upon invocation whereas with method handles the access checks are performed in order to obtain the method handle. This results in better performance - no need to continously check access, and also provides more flexibility, for example, obtaining a method handle for a private method and giving that method handle to code which would not normally be able to access that method.
+
+* **Flexibility**
+  
+  Method handles aren't just for invoking methods - their flexibility allows them to do things like getting/setting fields, constructing objects and even acting as intermediaries for an underlying method handle, for example, the `asSpreader` method[^1] which creates a method handle which calls an underlying method handle after spreading the input argument.
+  
+
 ## Using Method Handles
 
-So let's say we want to allow the dynamic invocation of a user specified method which can take any number or type of arguments, including primitive ones.
+So let's say we want to invoke a method, known only at runtime, which can take any number or type of arguments, including primitive ones.
+
+The traditional way of doing this would be using reflection like so:
+```Java
+var method = System.class.getDeclaredMethod("exit", int.class);
+method.invoke(null, 1);
+```
+
+But to avoid the overhead of boxing the integer argument we can use method handles:
+```Java
+MethodHandles.Lookup lookup = MethodHandles.lookup();
+var mh = lookup.findStatic(System.class, "exit", MethodType.methodType(void.class, int.class));
+mh.invokeExact(1);
+```
+
+To use a method handle from bytecode see the dissasembly a posted earlier.
